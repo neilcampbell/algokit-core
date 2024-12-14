@@ -1,5 +1,6 @@
 use rmp_serde;
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Debug)]
 pub enum MsgPackError {
@@ -9,10 +10,16 @@ pub enum MsgPackError {
 
 pub trait Transaction: Serialize + for<'de> Deserialize<'de> {
     fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+        // We use serde_json because it's going to be sorted, which is required for TXID/signing
+        let value = serde_json::to_value(self).map_err(|e| {
+            MsgPackError::SerializeError(rmp_serde::encode::Error::Syntax(e.to_string()))
+        })?;
+
         let mut buf = Vec::new();
         let mut serializer = rmp_serde::Serializer::new(&mut buf).with_struct_map();
 
-        self.serialize(&mut serializer)
+        value
+            .serialize(&mut serializer)
             .map_err(MsgPackError::SerializeError)?;
 
         Ok(buf)
@@ -23,7 +30,7 @@ pub trait Transaction: Serialize + for<'de> Deserialize<'de> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 enum TransactionType {
     #[serde(rename = "pay")]
     Payment,
@@ -47,7 +54,7 @@ enum TransactionType {
 type Byte32 = [u8; 32];
 type Pubkey = Byte32;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 struct TransactionHeader {
     #[serde(rename = "type")]
     transaction_type: TransactionType,
@@ -80,7 +87,7 @@ struct TransactionHeader {
 
 impl Transaction for TransactionHeader {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 struct PayTransaction {
     #[serde(flatten)]
     header: TransactionHeader,
@@ -117,11 +124,8 @@ fn test_pay_transaction() {
         close_remainder_to: None,
     };
 
-    println!("{:?}", transaction);
-
     let encoded = transaction.encode().unwrap();
-    println!("{:?}", encoded);
-
     let decoded = PayTransaction::decode(&encoded).unwrap();
-    println!("{:?}", decoded);
+
+    assert_eq!(transaction, decoded);
 }
