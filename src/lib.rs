@@ -78,9 +78,31 @@ pub struct PayTransactionFields {
     close_remainder_to: Option<Pubkey>,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub struct AssetTransferTransactionFields {
+    #[serde(flatten)]
+    header: TransactionHeader,
+
+    #[serde(rename = "xaid")]
+    asset_id: u64,
+
+    #[serde(rename = "aamt")]
+    amount: u64,
+
+    #[serde(rename = "arcv")]
+    receiver: Pubkey,
+
+    #[serde(rename = "asnd")]
+    asset_sender: Option<Pubkey>,
+
+    #[serde(rename = "aclose")]
+    close_remainder_to: Option<Pubkey>,
+}
+
 #[derive(Debug)]
 pub enum Transaction {
     Payment(PayTransactionFields),
+    AssetTransfer(AssetTransferTransactionFields),
 }
 
 impl Transaction {
@@ -88,6 +110,7 @@ impl Transaction {
         // We use serde_json because it's going to be sorted, which is required for TXID/signing
         let value = match self {
             Transaction::Payment(tx) => serde_json::to_value(tx),
+            Transaction::AssetTransfer(tx) => serde_json::to_value(tx),
         }
         .map_err(|e| {
             MsgPackError::SerializeError(rmp_serde::encode::Error::Syntax(e.to_string()))
@@ -111,6 +134,9 @@ impl Transaction {
         // Then decode the full transaction based on the type
         match header.transaction_type {
             TransactionType::Payment => Ok(Transaction::Payment(
+                rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?,
+            )),
+            TransactionType::AssetTransfer => Ok(Transaction::AssetTransfer(
                 rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?,
             )),
             _ => unimplemented!("Encoding not implemented for this transaction type"),
@@ -144,5 +170,38 @@ fn test_pay_transaction() {
 
     match decoded {
         Transaction::Payment(tx) => assert_eq!(tx, transaction),
+        _ => panic!("Decoded transaction is not a payment"),
+    }
+}
+
+#[test]
+fn test_asset_transfer_transaction() {
+    let transaction = AssetTransferTransactionFields {
+        header: TransactionHeader {
+            transaction_type: TransactionType::AssetTransfer,
+            sender: [0; 32],
+            fee: 1000,
+            first_valid: 1000,
+            last_valid: 1000,
+            genesis_hash: None,
+            note: None,
+            rekey_to: None,
+            lease: None,
+            group: None,
+        },
+        asset_id: 1,
+        amount: 1000,
+        receiver: [0; 32],
+        asset_sender: None,
+        close_remainder_to: None,
+    };
+
+    let tx = Transaction::AssetTransfer(transaction.clone());
+    let encoded = tx.encode().unwrap();
+    let decoded = Transaction::decode(&encoded).unwrap();
+
+    match decoded {
+        Transaction::AssetTransfer(tx) => assert_eq!(tx, transaction),
+        _ => panic!("Decoded transaction is not an asset transfer"),
     }
 }
