@@ -225,7 +225,10 @@ impl From<crate::TransactionType> for TransactionType {
     }
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(
+    target_arch = "wasm32",
+    wasm_bindgen(js_name = "getEncodedTransactionType")
+)]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, MsgPackError> {
     let header: TransactionHeader =
@@ -233,13 +236,13 @@ pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, Msg
     Ok(header.transaction_type)
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodePayment"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_payment(tx: PayTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     Transaction::Payment(tx.clone().into()).encode()
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodePayment"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError> {
     Transaction::decode(bytes).map(|tx| match tx {
@@ -248,13 +251,13 @@ pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError
     })
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodeAssetTransfer"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     Transaction::AssetTransfer(tx.clone().into()).encode()
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodeAssetTransfer"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_asset_transfer(bytes: &[u8]) -> Result<AssetTransferTransactionFields, MsgPackError> {
     Transaction::decode(bytes).map(|tx| match tx {

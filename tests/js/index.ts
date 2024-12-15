@@ -1,7 +1,6 @@
 import init, {
   type PayTransactionFields,
-  encode_payment,
-  decode_payment,
+  encodePayment,
 } from "./pkg/algo_models_rs";
 
 let { AlgorandTransactionCrafter } = require("@algorandfoundation/algo-models");
@@ -44,7 +43,7 @@ async function main() {
     amount: tx.amt,
   } as PayTransactionFields;
 
-  const encoded2 = encode_payment(fields);
+  const encoded2 = encodePayment(fields);
 
   console.log("algo-models-ts", encoded);
   console.log("algo-models-rs", encoded2);

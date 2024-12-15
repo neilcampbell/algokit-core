@@ -1,10 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
-export function get_encoded_transaction_type(bytes: Uint8Array): TransactionType;
-export function encode_payment(tx: PayTransactionFields): Uint8Array;
-export function decode_payment(bytes: Uint8Array): PayTransactionFields;
-export function encode_asset_transfer(tx: AssetTransferTransactionFields): Uint8Array;
-export function decode_asset_transfer(bytes: Uint8Array): AssetTransferTransactionFields;
+export function getEncodedTransactionType(bytes: Uint8Array): TransactionType;
+export function encodePayment(tx: PayTransactionFields): Uint8Array;
+export function decodePayment(bytes: Uint8Array): PayTransactionFields;
+export function encodeAssetTransfer(tx: AssetTransferTransactionFields): Uint8Array;
+export function decodeAssetTransfer(bytes: Uint8Array): AssetTransferTransactionFields;
 export type TransactionType = "Payment" | "AssetTransfer" | "AssetFreeze" | "AssetConfig" | "KeyRegistration" | "ApplicationCall";
 
 export interface TransactionHeader {
@@ -42,11 +42,11 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly get_encoded_transaction_type: (a: number, b: number) => [number, number, number];
-  readonly encode_payment: (a: any) => [number, number, number, number];
-  readonly decode_payment: (a: number, b: number) => [number, number, number];
-  readonly encode_asset_transfer: (a: any) => [number, number, number, number];
-  readonly decode_asset_transfer: (a: number, b: number) => [number, number, number];
+  readonly getEncodedTransactionType: (a: number, b: number) => [number, number, number];
+  readonly encodePayment: (a: any) => [number, number, number, number];
+  readonly decodePayment: (a: number, b: number) => [number, number, number];
+  readonly encodeAssetTransfer: (a: any) => [number, number, number, number];
+  readonly decodeAssetTransfer: (a: number, b: number) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;

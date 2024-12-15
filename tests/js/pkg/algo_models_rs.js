@@ -168,10 +168,10 @@ function takeFromExternrefTable0(idx) {
  * @param {Uint8Array} bytes
  * @returns {TransactionType}
  */
-export function get_encoded_transaction_type(bytes) {
+export function getEncodedTransactionType(bytes) {
     const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_encoded_transaction_type(ptr0, len0);
+    const ret = wasm.getEncodedTransactionType(ptr0, len0);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -186,8 +186,8 @@ function getArrayU8FromWasm0(ptr, len) {
  * @param {PayTransactionFields} tx
  * @returns {Uint8Array}
  */
-export function encode_payment(tx) {
-    const ret = wasm.encode_payment(tx);
+export function encodePayment(tx) {
+    const ret = wasm.encodePayment(tx);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -200,10 +200,10 @@ export function encode_payment(tx) {
  * @param {Uint8Array} bytes
  * @returns {PayTransactionFields}
  */
-export function decode_payment(bytes) {
+export function decodePayment(bytes) {
     const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decode_payment(ptr0, len0);
+    const ret = wasm.decodePayment(ptr0, len0);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -214,8 +214,8 @@ export function decode_payment(bytes) {
  * @param {AssetTransferTransactionFields} tx
  * @returns {Uint8Array}
  */
-export function encode_asset_transfer(tx) {
-    const ret = wasm.encode_asset_transfer(tx);
+export function encodeAssetTransfer(tx) {
+    const ret = wasm.encodeAssetTransfer(tx);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -228,10 +228,10 @@ export function encode_asset_transfer(tx) {
  * @param {Uint8Array} bytes
  * @returns {AssetTransferTransactionFields}
  */
-export function decode_asset_transfer(bytes) {
+export function decodeAssetTransfer(bytes) {
     const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decode_asset_transfer(ptr0, len0);
+    const ret = wasm.decodeAssetTransfer(ptr0, len0);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
