@@ -10,7 +10,14 @@ import * as ed from "@noble/ed25519";
 import * as msgpack from "algo-msgpack-with-bigint";
 
 async function main() {
+  // Generate a ed25519 keypair
   const privKey = ed.utils.randomPrivateKey();
+
+  /* ***************************************************************
+   *
+   *  TS version: https://github.com/algorandfoundation/algo-models
+   *
+   ****************************************************************** */
 
   // sample vars
   const genId = "testnet-v1.0";
@@ -34,8 +41,15 @@ async function main() {
   const sigTs = await ed.signAsync(bytesForSigningTs, privKey);
   const signedTxTs = algoCrafter.addSignature(bytesForSigningTs, sigTs);
 
-  // Now for the Rust version...
-  await init(); // init the wasm module
+  /* ***************************************************************
+   *
+   *  Rust (WASM) version
+   *
+   ****************************************************************** */
+
+  // init the wasm module, this would likely be done at the top level of our module
+  // so users don't have to do it manually
+  await init();
 
   const fields = {
     header: {
