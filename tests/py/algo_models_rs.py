@@ -468,7 +468,7 @@ def _uniffi_check_api_checksums(lib):
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     if lib.uniffi_algo_models_rs_checksum_func_encode_payment() != 409:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    if lib.uniffi_algo_models_rs_checksum_func_get_encoded_transaction_type() != 32904:
+    if lib.uniffi_algo_models_rs_checksum_func_get_encoded_transaction_type() != 41540:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
 
 # A ctypes library to expose the extern-C FFI definitions.
@@ -1075,8 +1075,21 @@ class _UniffiConverterTypePayTransactionFields(_UniffiConverterRustBuffer):
 
 
 class TransactionHeader:
+    """
+    The transaction header contains the fields that can be present in any transaction.
+    "Header" only indicates that these are common fields, NOT that they are the first fields in the transaction.
+    """
+
     transaction_type: "TransactionType"
+    """
+    The type of transaction
+    """
+
     sender: "ByteBuf"
+    """
+    The sender of the transaction
+    """
+
     fee: "int"
     first_valid: "int"
     last_valid: "int"
@@ -1450,6 +1463,11 @@ def encode_payment(tx: "PayTransactionFields") -> "bytes":
 
 
 def get_encoded_transaction_type(bytes: "bytes") -> "TransactionType":
+    """
+    Get the transaction type from the encoded transaction.
+    This is particularly useful when decoding a transaction that has a unknow type
+    """
+
     _UniffiConverterBytes.check_lower(bytes)
     
     return _UniffiConverterTypeTransactionType.lift(_uniffi_rust_call_with_error(_UniffiConverterTypeMsgPackError,_UniffiLib.uniffi_algo_models_rs_fn_func_get_encoded_transaction_type,

@@ -48,9 +48,13 @@ pub enum TransactionType {
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+/// The transaction header contains the fields that can be present in any transaction.
+/// "Header" only indicates that these are common fields, NOT that they are the first fields in the transaction.
 pub struct TransactionHeader {
+    /// The type of transaction
     transaction_type: TransactionType,
 
+    /// The sender of the transaction
     sender: ByteBuf,
 
     fee: u64,
@@ -230,6 +234,9 @@ impl From<crate::TransactionType> for TransactionType {
     wasm_bindgen(js_name = "getEncodedTransactionType")
 )]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+
+/// Get the transaction type from the encoded transaction.
+/// This is particularly useful when decoding a transaction that has a unknow type
 pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, MsgPackError> {
     let header: TransactionHeader =
         rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?;

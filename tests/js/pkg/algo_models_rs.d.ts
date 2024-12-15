@@ -1,5 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Get the transaction type from the encoded transaction.
+ * This is particularly useful when decoding a transaction that has a unknow type
+ */
 export function getEncodedTransactionType(bytes: Uint8Array): TransactionType;
 export function encodePayment(tx: PayTransactionFields): Uint8Array;
 export function decodePayment(bytes: Uint8Array): PayTransactionFields;
@@ -7,8 +11,18 @@ export function encodeAssetTransfer(tx: AssetTransferTransactionFields): Uint8Ar
 export function decodeAssetTransfer(bytes: Uint8Array): AssetTransferTransactionFields;
 export type TransactionType = "Payment" | "AssetTransfer" | "AssetFreeze" | "AssetConfig" | "KeyRegistration" | "ApplicationCall";
 
+/**
+ * The transaction header contains the fields that can be present in any transaction.
+ * \"Header\" only indicates that these are common fields, NOT that they are the first fields in the transaction.
+ */
 export interface TransactionHeader {
+    /**
+     * The type of transaction
+     */
     transactionType: TransactionType;
+    /**
+     * The sender of the transaction
+     */
     sender: Uint8Array;
     fee: bigint;
     firstValid: bigint;

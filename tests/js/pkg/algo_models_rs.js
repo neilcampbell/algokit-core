@@ -165,6 +165,8 @@ function takeFromExternrefTable0(idx) {
     return value;
 }
 /**
+ * Get the transaction type from the encoded transaction.
+ * This is particularly useful when decoding a transaction that has a unknow type
  * @param {Uint8Array} bytes
  * @returns {TransactionType}
  */
