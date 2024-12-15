@@ -27,6 +27,46 @@ pub enum MsgPackError {
     RmpvConvertError,
 }
 
+pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
+    /// msgpack encoding of the transaction with keys sorted and empty fields omitted
+    fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+        // First serialize to a temporary buffer to get the map entries
+        let mut temp_buf = Vec::new();
+        let mut temp_serializer = rmp_serde::Serializer::new(&mut temp_buf)
+            .with_struct_map()
+            .with_bytes(rmp_serde::config::BytesMode::ForceAll);
+
+        self.serialize(&mut temp_serializer)
+            .map_err(|_| MsgPackError::SerializeError)?;
+
+        // Deserialize into a BTreeMap to sort
+        let sorted_map: BTreeMap<String, rmpv::Value> = rmpv::ext::from_value(
+            rmpv::decode::read_value(&mut temp_buf.as_slice())
+                .map_err(|_| MsgPackError::RmpvDecodeError)?,
+        )
+        .map_err(|_| MsgPackError::RmpvConvertError)?;
+
+        // Serialize the sorted map
+        let mut final_buf = Vec::new();
+        rmpv::encode::write_value(
+            &mut final_buf,
+            &rmpv::Value::Map(
+                sorted_map
+                    .into_iter()
+                    .map(|(k, v)| (rmpv::Value::String(k.into()), v))
+                    .collect(),
+            ),
+        )
+        .map_err(|_| MsgPackError::RmpvEncodeError)?;
+
+        Ok(final_buf)
+    }
+
+    fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
+        rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum TransactionType {
     #[serde(rename = "pay")]
@@ -107,6 +147,8 @@ pub struct PayTransactionFields {
     close_remainder_to: Option<Pubkey>,
 }
 
+impl AlgorandMsgpack for PayTransactionFields {}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct AssetTransferTransactionFields {
     #[serde(flatten)]
@@ -130,67 +172,7 @@ pub struct AssetTransferTransactionFields {
     close_remainder_to: Option<Pubkey>,
 }
 
-#[derive(Debug)]
-pub enum Transaction {
-    Payment(PayTransactionFields),
-    AssetTransfer(AssetTransferTransactionFields),
-}
-
-impl Transaction {
-    /// msgpack encoding of the transaction with keys sorted and empty fields omitted
-    pub fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
-        // First serialize to a temporary buffer to get the map entries
-        let mut temp_buf = Vec::new();
-        let mut temp_serializer = rmp_serde::Serializer::new(&mut temp_buf)
-            .with_struct_map()
-            .with_bytes(rmp_serde::config::BytesMode::ForceAll);
-
-        match self {
-            Transaction::Payment(tx) => tx.serialize(&mut temp_serializer),
-            Transaction::AssetTransfer(tx) => tx.serialize(&mut temp_serializer),
-        }
-        .map_err(|_| MsgPackError::SerializeError)?;
-
-        // Deserialize into a BTreeMap to sort
-        let sorted_map: BTreeMap<String, rmpv::Value> = rmpv::ext::from_value(
-            rmpv::decode::read_value(&mut temp_buf.as_slice())
-                .map_err(|_| MsgPackError::RmpvDecodeError)?,
-        )
-        .map_err(|_| MsgPackError::RmpvConvertError)?;
-
-        // Serialize the sorted map
-        let mut final_buf = Vec::new();
-        rmpv::encode::write_value(
-            &mut final_buf,
-            &rmpv::Value::Map(
-                sorted_map
-                    .into_iter()
-                    .map(|(k, v)| (rmpv::Value::String(k.into()), v))
-                    .collect(),
-            ),
-        )
-        .map_err(|_| MsgPackError::RmpvEncodeError)?;
-
-        Ok(final_buf)
-    }
-
-    pub fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
-        // First decode just the header to check the type
-        let header: TransactionHeader =
-            rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?;
-
-        // Then decode the full transaction based on the type
-        match header.transaction_type {
-            TransactionType::Payment => Ok(Transaction::Payment(
-                rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?,
-            )),
-            TransactionType::AssetTransfer => Ok(Transaction::AssetTransfer(
-                rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?,
-            )),
-            _ => unimplemented!("Encoding not implemented for this transaction type"),
-        }
-    }
-}
+impl AlgorandMsgpack for AssetTransferTransactionFields {}
 
 #[test]
 fn test_pay_transaction() {
@@ -213,14 +195,9 @@ fn test_pay_transaction() {
         close_remainder_to: None,
     };
 
-    let tx = Transaction::Payment(transaction.clone());
-    let encoded = tx.encode().unwrap();
-    let decoded = Transaction::decode(&encoded).unwrap();
-
-    match decoded {
-        Transaction::Payment(tx) => assert_eq!(tx, transaction),
-        _ => panic!("Decoded transaction is not a payment"),
-    }
+    let encoded = transaction.encode().unwrap();
+    let decoded = PayTransactionFields::decode(&encoded).unwrap();
+    assert_eq!(decoded, transaction);
 }
 
 #[test]
@@ -246,12 +223,7 @@ fn test_asset_transfer_transaction() {
         close_remainder_to: None,
     };
 
-    let tx = Transaction::AssetTransfer(transaction.clone());
-    let encoded = tx.encode().unwrap();
-    let decoded = Transaction::decode(&encoded).unwrap();
-
-    match decoded {
-        Transaction::AssetTransfer(tx) => assert_eq!(tx, transaction),
-        _ => panic!("Decoded transaction is not an asset transfer"),
-    }
+    let encoded = transaction.encode().unwrap();
+    let decoded = AssetTransferTransactionFields::decode(&encoded).unwrap();
+    assert_eq!(decoded, transaction);
 }

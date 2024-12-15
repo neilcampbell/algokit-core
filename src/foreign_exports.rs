@@ -3,7 +3,7 @@ use crate::UniffiCustomTypeConverter;
 #[cfg(not(target_arch = "wasm32"))]
 use uniffi::{self};
 
-use crate::{MsgPackError, Transaction};
+use crate::{AlgorandMsgpack, MsgPackError};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use tsify_next::Tsify;
@@ -246,29 +246,27 @@ pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, Msg
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodePayment"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_payment(tx: PayTransactionFields) -> Result<Vec<u8>, MsgPackError> {
-    Transaction::Payment(tx.clone().into()).encode()
+    let ctx: crate::PayTransactionFields = tx.into();
+    ctx.encode()
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodePayment"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError> {
-    Transaction::decode(bytes).map(|tx| match tx {
-        Transaction::Payment(tx) => tx.into(),
-        _ => panic!("Decoded transaction is not a payment"),
-    })
+    let tx = crate::PayTransactionFields::decode(bytes)?;
+    Ok(tx.into())
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodeAssetTransfer"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u8>, MsgPackError> {
-    Transaction::AssetTransfer(tx.clone().into()).encode()
+    let ctx: crate::AssetTransferTransactionFields = tx.into();
+    ctx.encode()
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodeAssetTransfer"))]
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_asset_transfer(bytes: &[u8]) -> Result<AssetTransferTransactionFields, MsgPackError> {
-    Transaction::decode(bytes).map(|tx| match tx {
-        Transaction::AssetTransfer(tx) => tx.into(),
-        _ => panic!("Decoded transaction is not an asset transfer"),
-    })
+    let tx = crate::AssetTransferTransactionFields::decode(bytes)?;
+    Ok(tx.into())
 }
