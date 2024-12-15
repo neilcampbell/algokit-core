@@ -5,10 +5,11 @@
  * This is particularly useful when decoding a transaction that has a unknow type
  */
 export function getEncodedTransactionType(bytes: Uint8Array): TransactionType;
-export function encodePayment(tx: PayTransactionFields): Uint8Array;
+export function encodePayment(tx: PayTransactionFields, encode_for_signing?: boolean): Uint8Array;
 export function decodePayment(bytes: Uint8Array): PayTransactionFields;
-export function encodeAssetTransfer(tx: AssetTransferTransactionFields): Uint8Array;
+export function encodeAssetTransfer(tx: AssetTransferTransactionFields, encode_for_signing?: boolean): Uint8Array;
 export function decodeAssetTransfer(bytes: Uint8Array): AssetTransferTransactionFields;
+export function attachSignature(encoded_tx: Uint8Array, signature: Uint8Array): Uint8Array;
 export type TransactionType = "Payment" | "AssetTransfer" | "AssetFreeze" | "AssetConfig" | "KeyRegistration" | "ApplicationCall";
 
 /**
@@ -57,10 +58,11 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly getEncodedTransactionType: (a: number, b: number) => [number, number, number];
-  readonly encodePayment: (a: any) => [number, number, number, number];
+  readonly encodePayment: (a: any, b: number) => [number, number, number, number];
   readonly decodePayment: (a: number, b: number) => [number, number, number];
-  readonly encodeAssetTransfer: (a: any) => [number, number, number, number];
+  readonly encodeAssetTransfer: (a: any, b: number) => [number, number, number, number];
   readonly decodeAssetTransfer: (a: number, b: number) => [number, number, number];
+  readonly attachSignature: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;

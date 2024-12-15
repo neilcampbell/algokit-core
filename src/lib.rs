@@ -63,7 +63,20 @@ pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
     }
 
     fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
-        rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)
+        if bytes[0] == b'T' && bytes[1] == b'X' {
+            let without_prefix = bytes[2..].to_vec();
+            rmp_serde::from_slice(&without_prefix).map_err(|_| MsgPackError::DeserializeError)
+        } else {
+            rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)
+        }
+    }
+
+    fn encode_for_signing(&self) -> Result<Vec<u8>, MsgPackError> {
+        let encoded = self.encode()?;
+        let mut buf = Vec::with_capacity(encoded.len() + 2);
+        buf.extend_from_slice(b"TX");
+        buf.extend_from_slice(&encoded);
+        Ok(buf)
     }
 }
 
@@ -176,11 +189,14 @@ pub struct AssetTransferTransactionFields {
 
 impl AlgorandMsgpack for AssetTransferTransactionFields {}
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(untagged)]
 pub enum Transaction {
     Payment(PayTransactionFields),
     AssetTransfer(AssetTransferTransactionFields),
 }
+
+impl AlgorandMsgpack for Transaction {}
 
 impl Transaction {
     pub fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
@@ -204,9 +220,20 @@ impl Transaction {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub struct SignedTransaction {
+    #[serde(rename = "tx")]
+    transaction: Transaction,
+
+    #[serde(rename = "sig")]
+    signature: Byte32,
+}
+
+impl AlgorandMsgpack for SignedTransaction {}
+
 #[test]
 fn test_pay_transaction() {
-    let transaction = PayTransactionFields {
+    let tx_struct = PayTransactionFields {
         header: TransactionHeader {
             genesis_id: None,
             transaction_type: TransactionType::Payment,
@@ -225,19 +252,35 @@ fn test_pay_transaction() {
         close_remainder_to: None,
     };
 
-    let encoded = transaction.encode().unwrap();
-    let decoded = PayTransactionFields::decode(&encoded).unwrap();
-    assert_eq!(decoded, transaction);
+    let encoded_struct = tx_struct.encode().unwrap();
+    let decoded_struct = PayTransactionFields::decode(&encoded_struct).unwrap();
+    assert_eq!(decoded_struct, tx_struct);
 
-    let tx = Transaction::Payment(transaction.clone());
-    let encoded = tx.encode().unwrap();
-    let decoded = Transaction::decode(&encoded).unwrap();
-    assert_eq!(decoded, tx);
+    let tx_enum = Transaction::Payment(tx_struct.clone());
+    let encoded_enum = tx_enum.encode().unwrap();
+    let decoded_enum = Transaction::decode(&encoded_enum).unwrap();
+    assert_eq!(decoded_enum, tx_enum);
+    assert_eq!(decoded_enum, Transaction::Payment(tx_struct.clone()));
+
+    let signed_tx = SignedTransaction {
+        transaction: tx_enum.clone(),
+        signature: serde_bytes::ByteBuf::from([0; 64]),
+    };
+    let encoded_stx = signed_tx.encode().unwrap();
+    let decoded_stx = SignedTransaction::decode(&encoded_stx).unwrap();
+    assert_eq!(decoded_stx, signed_tx);
+    assert_eq!(decoded_stx.transaction, tx_enum);
+
+    let prefix_encoded = tx_struct.encode_for_signing().unwrap();
+    assert_eq!(prefix_encoded[0], b'T');
+    assert_eq!(prefix_encoded[1], b'X');
+    assert_eq!(prefix_encoded.len(), encoded_struct.len() + 2);
+    assert_eq!(prefix_encoded[2..], encoded_struct);
 }
 
 #[test]
 fn test_asset_transfer_transaction() {
-    let transaction = AssetTransferTransactionFields {
+    let tx_struct = AssetTransferTransactionFields {
         header: TransactionHeader {
             genesis_id: None,
             transaction_type: TransactionType::AssetTransfer,
@@ -258,12 +301,27 @@ fn test_asset_transfer_transaction() {
         close_remainder_to: None,
     };
 
-    let encoded = transaction.encode().unwrap();
-    let decoded = AssetTransferTransactionFields::decode(&encoded).unwrap();
-    assert_eq!(decoded, transaction);
+    let encoded_struct = tx_struct.encode().unwrap();
+    let decoded_struct = AssetTransferTransactionFields::decode(&encoded_struct).unwrap();
+    assert_eq!(decoded_struct, tx_struct);
 
-    let tx = Transaction::AssetTransfer(transaction.clone());
-    let encoded = tx.encode().unwrap();
-    let decoded = Transaction::decode(&encoded).unwrap();
-    assert_eq!(decoded, tx);
+    let tx_enum = Transaction::AssetTransfer(tx_struct.clone());
+    let encoded_enum = tx_enum.encode().unwrap();
+    let decoded_enum = Transaction::decode(&encoded_enum).unwrap();
+    assert_eq!(decoded_enum, tx_enum);
+
+    let signed_tx = SignedTransaction {
+        transaction: tx_enum.clone(),
+        signature: serde_bytes::ByteBuf::from([0; 64]),
+    };
+    let encoded_stx = signed_tx.encode().unwrap();
+    let decoded_stx = SignedTransaction::decode(&encoded_stx).unwrap();
+    assert_eq!(decoded_stx, signed_tx);
+    assert_eq!(decoded_stx.transaction, tx_enum);
+
+    let prefix_encoded = tx_struct.encode_for_signing().unwrap();
+    assert_eq!(prefix_encoded[0], b'T');
+    assert_eq!(prefix_encoded[1], b'X');
+    assert_eq!(prefix_encoded.len(), encoded_struct.len() + 2);
+    assert_eq!(prefix_encoded[2..], encoded_struct);
 }

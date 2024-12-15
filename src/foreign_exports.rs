@@ -244,10 +244,20 @@ pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, Msg
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodePayment"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn encode_payment(tx: PayTransactionFields) -> Result<Vec<u8>, MsgPackError> {
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    uniffi::export(default(encode_for_signing = Some(false)))
+)]
+pub fn encode_payment(
+    tx: PayTransactionFields,
+    encode_for_signing: Option<bool>,
+) -> Result<Vec<u8>, MsgPackError> {
     let ctx: crate::PayTransactionFields = tx.into();
-    ctx.encode()
+    if encode_for_signing.unwrap_or(false) {
+        ctx.encode_for_signing()
+    } else {
+        ctx.encode()
+    }
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodePayment"))]
@@ -258,10 +268,20 @@ pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodeAssetTransfer"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u8>, MsgPackError> {
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    uniffi::export(default(encode_for_signing = Some(false)))
+)]
+pub fn encode_asset_transfer(
+    tx: AssetTransferTransactionFields,
+    encode_for_signing: Option<bool>,
+) -> Result<Vec<u8>, MsgPackError> {
     let ctx: crate::AssetTransferTransactionFields = tx.into();
-    ctx.encode()
+    if encode_for_signing.unwrap_or(false) {
+        ctx.encode_for_signing()
+    } else {
+        ctx.encode()
+    }
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodeAssetTransfer"))]
@@ -269,4 +289,15 @@ pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u
 pub fn decode_asset_transfer(bytes: &[u8]) -> Result<AssetTransferTransactionFields, MsgPackError> {
     let tx = crate::AssetTransferTransactionFields::decode(bytes)?;
     Ok(tx.into())
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "attachSignature"))]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn attach_signature(encoded_tx: &[u8], signature: &[u8]) -> Result<Vec<u8>, MsgPackError> {
+    let encoded_tx = crate::Transaction::decode(encoded_tx)?;
+    let signed_tx = crate::SignedTransaction {
+        transaction: encoded_tx,
+        signature: ByteBuf::from(signature.to_vec()),
+    };
+    signed_tx.encode()
 }

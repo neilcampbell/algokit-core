@@ -1,6 +1,7 @@
 import init, {
   type PayTransactionFields,
   encodePayment,
+  attachSignature,
 } from "./pkg/algo_models_rs";
 
 let { AlgorandTransactionCrafter } = require("@algorandfoundation/algo-models");
@@ -27,7 +28,7 @@ async function main() {
 
   // The encoding algorithm is a fork of the actual msgpack (https://github.com/EvanJRichard/msgpack-javascript)
   // After msgpack encoding a TX TAG is added as a prefix to the result.
-  const encoded: Uint8Array = tx.encode(); // encoded msg ready - to be signed with EdDSA
+  const encodedTs: Uint8Array = tx.encode(); // encoded msg ready - to be signed with EdDSA
 
   const fields = {
     header: {
@@ -43,14 +44,24 @@ async function main() {
     amount: tx.amt,
   } as PayTransactionFields;
 
-  const encoded2 = encodePayment(fields);
+  const encodedRs = encodePayment(fields, true);
 
-  console.log("algo-models-ts", encoded);
-  console.log("algo-models-rs", encoded2);
-  console.log("algo-models-rs", msgpack.decode(encoded2));
-  console.log("algo-models-ts", msgpack.decode(encoded.slice(2)));
+  console.log("algo-models-ts", encodedTs);
+  console.log("algo-models-rs", encodedRs);
+  console.log("algo-models-rs", msgpack.decode(encodedRs.slice(2)));
+  console.log("algo-models-ts", msgpack.decode(encodedTs.slice(2)));
 
-  console.log("EQUAL?", encoded.slice(2).toString() === encoded2.toString());
+  if (encodedTs.toString() !== encodedRs.toString()) {
+    throw new Error("Encoded transactions are not equal");
+  } else {
+    console.log("Encoded transactions are equal");
+  }
+
+  const btyesForSigning = encodePayment(fields, true);
+  const sig = new Uint8Array(64);
+  const signedTx = attachSignature(btyesForSigning, sig);
+
+  console.log("signedTx", msgpack.decode(signedTx));
 }
 
 main();

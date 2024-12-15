@@ -186,10 +186,11 @@ function getArrayU8FromWasm0(ptr, len) {
 }
 /**
  * @param {PayTransactionFields} tx
+ * @param {boolean | undefined} [encode_for_signing]
  * @returns {Uint8Array}
  */
-export function encodePayment(tx) {
-    const ret = wasm.encodePayment(tx);
+export function encodePayment(tx, encode_for_signing) {
+    const ret = wasm.encodePayment(tx, isLikeNone(encode_for_signing) ? 0xFFFFFF : encode_for_signing ? 1 : 0);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -214,10 +215,11 @@ export function decodePayment(bytes) {
 
 /**
  * @param {AssetTransferTransactionFields} tx
+ * @param {boolean | undefined} [encode_for_signing]
  * @returns {Uint8Array}
  */
-export function encodeAssetTransfer(tx) {
-    const ret = wasm.encodeAssetTransfer(tx);
+export function encodeAssetTransfer(tx, encode_for_signing) {
+    const ret = wasm.encodeAssetTransfer(tx, isLikeNone(encode_for_signing) ? 0xFFFFFF : encode_for_signing ? 1 : 0);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -238,6 +240,25 @@ export function decodeAssetTransfer(bytes) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {Uint8Array} encoded_tx
+ * @param {Uint8Array} signature
+ * @returns {Uint8Array}
+ */
+export function attachSignature(encoded_tx, signature) {
+    const ptr0 = passArray8ToWasm0(encoded_tx, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArray8ToWasm0(signature, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.attachSignature(ptr0, len0, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v3;
 }
 
 async function __wbg_load(module, imports) {

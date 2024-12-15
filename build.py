@@ -57,7 +57,8 @@ if build_mode == "wasm":
     run("wasm-pack build --target web --out-dir ./tests/js/pkg -- --color always")
 
     # Remove the generated .gitignore file from the pkg directory
-    os.remove("tests/js/pkg/.gitignore")
+    if os.path.exists("tests/js/pkg/.gitignore"):
+        os.remove("tests/js/pkg/.gitignore")
 else:
     run("cargo --color always build --release")
 
