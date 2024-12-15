@@ -1,9 +1,31 @@
+#[cfg(not(target_arch = "wasm32"))]
+use crate::UniffiCustomTypeConverter;
+#[cfg(not(target_arch = "wasm32"))]
+use uniffi::{self};
+
 use crate::{MsgPackError, Transaction};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use tsify_next::Tsify;
 use wasm_bindgen::prelude::*;
 
+#[cfg(not(target_arch = "wasm32"))]
+impl UniffiCustomTypeConverter for ByteBuf {
+    type Builtin = Vec<u8>;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(ByteBuf::from(val))
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.to_vec()
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+uniffi::custom_type!(ByteBuf, Vec<u8>);
+
+#[cfg(target_arch = "wasm32")]
 impl From<MsgPackError> for JsValue {
     fn from(e: MsgPackError) -> Self {
         JsValue::from(e.to_string())
@@ -12,6 +34,7 @@ impl From<MsgPackError> for JsValue {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Enum))]
 pub enum TransactionType {
     Payment,
     AssetTransfer,
@@ -23,6 +46,7 @@ pub enum TransactionType {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct TransactionHeader {
     transaction_type: TransactionType,
 
@@ -55,6 +79,7 @@ pub struct TransactionHeader {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct PayTransactionFields {
     #[serde(flatten)]
     header: TransactionHeader,
@@ -69,6 +94,7 @@ pub struct PayTransactionFields {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct AssetTransferTransactionFields {
     #[serde(flatten)]
     header: TransactionHeader,
@@ -198,19 +224,22 @@ impl From<crate::TransactionType> for TransactionType {
     }
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, MsgPackError> {
     let header: TransactionHeader =
-        rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?;
+        rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?;
     Ok(header.transaction_type)
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_payment(tx: PayTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     Transaction::Payment(tx.clone().into()).encode()
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError> {
     Transaction::decode(bytes).map(|tx| match tx {
         Transaction::Payment(tx) => tx.into(),
@@ -218,12 +247,14 @@ pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError
     })
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     Transaction::AssetTransfer(tx.clone().into()).encode()
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn decode_asset_transfer(bytes: &[u8]) -> Result<AssetTransferTransactionFields, MsgPackError> {
     Transaction::decode(bytes).map(|tx| match tx {
         Transaction::AssetTransfer(tx) => tx.into(),

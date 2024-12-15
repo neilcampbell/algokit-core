@@ -5,22 +5,26 @@ use thiserror::Error;
 
 mod wasm_exports;
 
+#[cfg(not(target_arch = "wasm32"))]
+uniffi::setup_scaffolding!();
+
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Error))]
 #[derive(Debug, Error)]
 pub enum MsgPackError {
     #[error("Failed to serialize transaction")]
-    SerializeError(rmp_serde::encode::Error),
+    SerializeError,
 
     #[error("Failed to deserialize transaction")]
-    DeserializeError(rmp_serde::decode::Error),
+    DeserializeError,
 
     #[error("Failed to encode rmpv value")]
-    RmpvEncodeError(rmpv::encode::Error),
+    RmpvEncodeError,
 
     #[error("Failed to decode rmpv value")]
-    RmpvDecodeError(rmpv::decode::Error),
+    RmpvDecodeError,
 
     #[error("Failed to convert rmpv value")]
-    RmpvConvertError(rmpv::ext::Error),
+    RmpvConvertError,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
@@ -145,14 +149,14 @@ impl Transaction {
             Transaction::Payment(tx) => tx.serialize(&mut temp_serializer),
             Transaction::AssetTransfer(tx) => tx.serialize(&mut temp_serializer),
         }
-        .map_err(MsgPackError::SerializeError)?;
+        .map_err(|_| MsgPackError::SerializeError)?;
 
         // Deserialize into a BTreeMap to sort
         let sorted_map: BTreeMap<String, rmpv::Value> = rmpv::ext::from_value(
             rmpv::decode::read_value(&mut temp_buf.as_slice())
-                .map_err(MsgPackError::RmpvDecodeError)?,
+                .map_err(|_| MsgPackError::RmpvDecodeError)?,
         )
-        .map_err(MsgPackError::RmpvConvertError)?;
+        .map_err(|_| MsgPackError::RmpvConvertError)?;
 
         // Serialize the sorted map
         let mut final_buf = Vec::new();
@@ -165,7 +169,7 @@ impl Transaction {
                     .collect(),
             ),
         )
-        .map_err(MsgPackError::RmpvEncodeError)?;
+        .map_err(|_| MsgPackError::RmpvEncodeError)?;
 
         Ok(final_buf)
     }
@@ -173,15 +177,15 @@ impl Transaction {
     pub fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
         // First decode just the header to check the type
         let header: TransactionHeader =
-            rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?;
+            rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?;
 
         // Then decode the full transaction based on the type
         match header.transaction_type {
             TransactionType::Payment => Ok(Transaction::Payment(
-                rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?,
+                rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?,
             )),
             TransactionType::AssetTransfer => Ok(Transaction::AssetTransfer(
-                rmp_serde::from_slice(bytes).map_err(MsgPackError::DeserializeError)?,
+                rmp_serde::from_slice(bytes).map_err(|_| MsgPackError::DeserializeError)?,
             )),
             _ => unimplemented!("Encoding not implemented for this transaction type"),
         }
