@@ -131,6 +131,8 @@ pub struct TransactionHeader {
     group: Option<Byte32>,
 }
 
+impl AlgorandMsgpack for TransactionHeader {}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct PayTransactionFields {
     #[serde(flatten)]
@@ -174,6 +176,34 @@ pub struct AssetTransferTransactionFields {
 
 impl AlgorandMsgpack for AssetTransferTransactionFields {}
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum Transaction {
+    Payment(PayTransactionFields),
+    AssetTransfer(AssetTransferTransactionFields),
+}
+
+impl Transaction {
+    pub fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+        match self {
+            Transaction::Payment(tx) => tx.encode(),
+            Transaction::AssetTransfer(tx) => tx.encode(),
+        }
+    }
+
+    pub fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
+        let header = TransactionHeader::decode(bytes)?;
+        match header.transaction_type {
+            TransactionType::Payment => {
+                Ok(Transaction::Payment(PayTransactionFields::decode(bytes)?))
+            }
+            TransactionType::AssetTransfer => Ok(Transaction::AssetTransfer(
+                AssetTransferTransactionFields::decode(bytes)?,
+            )),
+            _ => Err(MsgPackError::DeserializeError),
+        }
+    }
+}
+
 #[test]
 fn test_pay_transaction() {
     let transaction = PayTransactionFields {
@@ -198,6 +228,11 @@ fn test_pay_transaction() {
     let encoded = transaction.encode().unwrap();
     let decoded = PayTransactionFields::decode(&encoded).unwrap();
     assert_eq!(decoded, transaction);
+
+    let tx = Transaction::Payment(transaction.clone());
+    let encoded = tx.encode().unwrap();
+    let decoded = Transaction::decode(&encoded).unwrap();
+    assert_eq!(decoded, tx);
 }
 
 #[test]
@@ -226,4 +261,9 @@ fn test_asset_transfer_transaction() {
     let encoded = transaction.encode().unwrap();
     let decoded = AssetTransferTransactionFields::decode(&encoded).unwrap();
     assert_eq!(decoded, transaction);
+
+    let tx = Transaction::AssetTransfer(transaction.clone());
+    let encoded = tx.encode().unwrap();
+    let decoded = Transaction::decode(&encoded).unwrap();
+    assert_eq!(decoded, tx);
 }
