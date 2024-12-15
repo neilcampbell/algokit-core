@@ -46,6 +46,7 @@ pub enum TransactionType {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct TransactionHeader {
     transaction_type: TransactionType,
@@ -79,6 +80,7 @@ pub struct TransactionHeader {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct PayTransactionFields {
     header: TransactionHeader,
@@ -93,6 +95,7 @@ pub struct PayTransactionFields {
 
 #[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct AssetTransferTransactionFields {
     header: TransactionHeader,

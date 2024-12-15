@@ -8,15 +8,15 @@ export function decode_asset_transfer(bytes: Uint8Array): AssetTransferTransacti
 export type TransactionType = "Payment" | "AssetTransfer" | "AssetFreeze" | "AssetConfig" | "KeyRegistration" | "ApplicationCall";
 
 export interface TransactionHeader {
-    transaction_type: TransactionType;
+    transactionType: TransactionType;
     sender: Uint8Array;
     fee: bigint;
-    first_valid: bigint;
-    last_valid: bigint;
-    genesis_hash?: Uint8Array;
-    genesis_id?: string;
+    firstValid: bigint;
+    lastValid: bigint;
+    genesisHash?: Uint8Array;
+    genesisId?: string;
     note?: Uint8Array;
-    rekey_to?: Uint8Array;
+    rekeyTo?: Uint8Array;
     lease?: Uint8Array;
     group?: Uint8Array;
 }
@@ -25,16 +25,16 @@ export interface PayTransactionFields {
     header: TransactionHeader;
     receiver: Uint8Array;
     amount: bigint;
-    close_remainder_to?: Uint8Array;
+    closeRemainderTo?: Uint8Array;
 }
 
 export interface AssetTransferTransactionFields {
     header: TransactionHeader;
-    asset_id: bigint;
+    assetId: bigint;
     amount: bigint;
     receiver: Uint8Array;
-    asset_sender?: Uint8Array;
-    close_remainder_to?: Uint8Array;
+    assetSender?: Uint8Array;
+    closeRemainderTo?: Uint8Array;
 }
 
 
