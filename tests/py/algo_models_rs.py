@@ -466,9 +466,9 @@ def _uniffi_check_api_checksums(lib):
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     if lib.uniffi_algo_models_rs_checksum_func_decode_payment() != 5736:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    if lib.uniffi_algo_models_rs_checksum_func_encode_asset_transfer() != 15898:
+    if lib.uniffi_algo_models_rs_checksum_func_encode_asset_transfer() != 29421:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    if lib.uniffi_algo_models_rs_checksum_func_encode_payment() != 62305:
+    if lib.uniffi_algo_models_rs_checksum_func_encode_payment() != 409:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     if lib.uniffi_algo_models_rs_checksum_func_get_encoded_transaction_type() != 41540:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
@@ -596,12 +596,10 @@ _UniffiLib.uniffi_algo_models_rs_fn_func_decode_payment.argtypes = (
 _UniffiLib.uniffi_algo_models_rs_fn_func_decode_payment.restype = _UniffiRustBuffer
 _UniffiLib.uniffi_algo_models_rs_fn_func_encode_asset_transfer.argtypes = (
     _UniffiRustBuffer,
-    _UniffiRustBuffer,
     ctypes.POINTER(_UniffiRustCallStatus),
 )
 _UniffiLib.uniffi_algo_models_rs_fn_func_encode_asset_transfer.restype = _UniffiRustBuffer
 _UniffiLib.uniffi_algo_models_rs_fn_func_encode_payment.argtypes = (
-    _UniffiRustBuffer,
     _UniffiRustBuffer,
     ctypes.POINTER(_UniffiRustCallStatus),
 )
@@ -919,27 +917,6 @@ class _UniffiConverterUInt64(_UniffiConverterPrimitiveInt):
     @staticmethod
     def write(value, buf):
         buf.write_u64(value)
-
-class _UniffiConverterBool:
-    @classmethod
-    def check_lower(cls, value):
-        return not not value
-
-    @classmethod
-    def lower(cls, value):
-        return 1 if value else 0
-
-    @staticmethod
-    def lift(value):
-        return value != 0
-
-    @classmethod
-    def read(cls, buf):
-        return cls.lift(buf.read_u8())
-
-    @classmethod
-    def write(cls, value, buf):
-        buf.write_u8(value)
 
 class _UniffiConverterString:
     @staticmethod
@@ -1391,33 +1368,6 @@ class _UniffiConverterTypeTransactionType(_UniffiConverterRustBuffer):
 
 
 
-class _UniffiConverterOptionalBool(_UniffiConverterRustBuffer):
-    @classmethod
-    def check_lower(cls, value):
-        if value is not None:
-            _UniffiConverterBool.check_lower(value)
-
-    @classmethod
-    def write(cls, value, buf):
-        if value is None:
-            buf.write_u8(0)
-            return
-
-        buf.write_u8(1)
-        _UniffiConverterBool.write(value, buf)
-
-    @classmethod
-    def read(cls, buf):
-        flag = buf.read_u8()
-        if flag == 0:
-            return None
-        elif flag == 1:
-            return _UniffiConverterBool.read(buf)
-        else:
-            raise InternalError("Unexpected flag byte for optional type")
-
-
-
 class _UniffiConverterOptionalString(_UniffiConverterRustBuffer):
     @classmethod
     def check_lower(cls, value):
@@ -1519,28 +1469,18 @@ def decode_payment(bytes: "bytes") -> "PayTransactionFields":
         _UniffiConverterBytes.lower(bytes)))
 
 
-def encode_asset_transfer(tx: "AssetTransferTransactionFields",encode_for_signing: "typing.Union[object, typing.Optional[bool]]" = _DEFAULT) -> "bytes":
+def encode_asset_transfer(tx: "AssetTransferTransactionFields") -> "bytes":
     _UniffiConverterTypeAssetTransferTransactionFields.check_lower(tx)
     
-    if encode_for_signing is _DEFAULT:
-        encode_for_signing = False
-    _UniffiConverterOptionalBool.check_lower(encode_for_signing)
-    
     return _UniffiConverterBytes.lift(_uniffi_rust_call_with_error(_UniffiConverterTypeMsgPackError,_UniffiLib.uniffi_algo_models_rs_fn_func_encode_asset_transfer,
-        _UniffiConverterTypeAssetTransferTransactionFields.lower(tx),
-        _UniffiConverterOptionalBool.lower(encode_for_signing)))
+        _UniffiConverterTypeAssetTransferTransactionFields.lower(tx)))
 
 
-def encode_payment(tx: "PayTransactionFields",encode_for_signing: "typing.Union[object, typing.Optional[bool]]" = _DEFAULT) -> "bytes":
+def encode_payment(tx: "PayTransactionFields") -> "bytes":
     _UniffiConverterTypePayTransactionFields.check_lower(tx)
     
-    if encode_for_signing is _DEFAULT:
-        encode_for_signing = False
-    _UniffiConverterOptionalBool.check_lower(encode_for_signing)
-    
     return _UniffiConverterBytes.lift(_uniffi_rust_call_with_error(_UniffiConverterTypeMsgPackError,_UniffiLib.uniffi_algo_models_rs_fn_func_encode_payment,
-        _UniffiConverterTypePayTransactionFields.lower(tx),
-        _UniffiConverterOptionalBool.lower(encode_for_signing)))
+        _UniffiConverterTypePayTransactionFields.lower(tx)))
 
 
 def get_encoded_transaction_type(bytes: "bytes") -> "TransactionType":

@@ -29,7 +29,7 @@ pub enum MsgPackError {
 
 pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
     /// msgpack encoding of the transaction with keys sorted and empty fields omitted
-    fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+    fn encode_raw(&self) -> Result<Vec<u8>, MsgPackError> {
         // First serialize to a temporary buffer to get the map entries
         let mut temp_buf = Vec::new();
         let mut temp_serializer = rmp_serde::Serializer::new(&mut temp_buf)
@@ -62,6 +62,7 @@ pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
         Ok(final_buf)
     }
 
+    /// Decode the bytes without the prefix "TX" (if present)
     fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
         if bytes[0] == b'T' && bytes[1] == b'X' {
             let without_prefix = bytes[2..].to_vec();
@@ -71,8 +72,9 @@ pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
         }
     }
 
-    fn encode_for_signing(&self) -> Result<Vec<u8>, MsgPackError> {
-        let encoded = self.encode()?;
+    /// Default implementation for encoding a transaction with the prefix "TX"
+    fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+        let encoded = self.encode_raw()?;
         let mut buf = Vec::with_capacity(encoded.len() + 2);
         buf.extend_from_slice(b"TX");
         buf.extend_from_slice(&encoded);
@@ -201,8 +203,8 @@ impl AlgorandMsgpack for Transaction {}
 impl Transaction {
     pub fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
         match self {
-            Transaction::Payment(tx) => tx.encode(),
-            Transaction::AssetTransfer(tx) => tx.encode(),
+            Transaction::Payment(tx) => tx.encode_raw(),
+            Transaction::AssetTransfer(tx) => tx.encode_raw(),
         }
     }
 
@@ -229,7 +231,11 @@ pub struct SignedTransaction {
     signature: Byte32,
 }
 
-impl AlgorandMsgpack for SignedTransaction {}
+impl AlgorandMsgpack for SignedTransaction {
+    fn encode(&self) -> Result<Vec<u8>, MsgPackError> {
+        self.encode_raw()
+    }
+}
 
 #[test]
 fn test_pay_transaction() {
@@ -252,7 +258,7 @@ fn test_pay_transaction() {
         close_remainder_to: None,
     };
 
-    let encoded_struct = tx_struct.encode().unwrap();
+    let encoded_struct = tx_struct.encode_raw().unwrap();
     let decoded_struct = PayTransactionFields::decode(&encoded_struct).unwrap();
     assert_eq!(decoded_struct, tx_struct);
 
@@ -266,12 +272,12 @@ fn test_pay_transaction() {
         transaction: tx_enum.clone(),
         signature: serde_bytes::ByteBuf::from([0; 64]),
     };
-    let encoded_stx = signed_tx.encode().unwrap();
+    let encoded_stx = signed_tx.encode_raw().unwrap();
     let decoded_stx = SignedTransaction::decode(&encoded_stx).unwrap();
     assert_eq!(decoded_stx, signed_tx);
     assert_eq!(decoded_stx.transaction, tx_enum);
 
-    let prefix_encoded = tx_struct.encode_for_signing().unwrap();
+    let prefix_encoded = tx_struct.encode().unwrap();
     assert_eq!(prefix_encoded[0], b'T');
     assert_eq!(prefix_encoded[1], b'X');
     assert_eq!(prefix_encoded.len(), encoded_struct.len() + 2);
@@ -301,7 +307,7 @@ fn test_asset_transfer_transaction() {
         close_remainder_to: None,
     };
 
-    let encoded_struct = tx_struct.encode().unwrap();
+    let encoded_struct = tx_struct.encode_raw().unwrap();
     let decoded_struct = AssetTransferTransactionFields::decode(&encoded_struct).unwrap();
     assert_eq!(decoded_struct, tx_struct);
 
@@ -314,12 +320,12 @@ fn test_asset_transfer_transaction() {
         transaction: tx_enum.clone(),
         signature: serde_bytes::ByteBuf::from([0; 64]),
     };
-    let encoded_stx = signed_tx.encode().unwrap();
+    let encoded_stx = signed_tx.encode_raw().unwrap();
     let decoded_stx = SignedTransaction::decode(&encoded_stx).unwrap();
     assert_eq!(decoded_stx, signed_tx);
     assert_eq!(decoded_stx.transaction, tx_enum);
 
-    let prefix_encoded = tx_struct.encode_for_signing().unwrap();
+    let prefix_encoded = tx_struct.encode().unwrap();
     assert_eq!(prefix_encoded[0], b'T');
     assert_eq!(prefix_encoded[1], b'X');
     assert_eq!(prefix_encoded.len(), encoded_struct.len() + 2);

@@ -10,7 +10,7 @@ def main():
     decoded_tx = decode_payment(tx_bytes)
     pprint(decoded_tx.__dict__)
     encoded_tx = encode_payment(decoded_tx)
-    assert encoded_tx == tx_bytes
+    assert encoded_tx[2:] == tx_bytes
     print("success")
 
 

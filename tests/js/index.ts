@@ -47,7 +47,7 @@ async function main() {
     amount: tx.amt,
   } as PayTransactionFields;
 
-  const btyesForSigning = encodePayment(fields, true);
+  const btyesForSigning = encodePayment(fields);
 
   // Signing with a ed25519 lib that has no idea about Algorand
   const privKey = ed.utils.randomPrivateKey();
@@ -55,10 +55,6 @@ async function main() {
   const signedTx = attachSignature(btyesForSigning, sig);
 
   console.log("signedTx", msgpack.decode(signedTx));
-  console.log("algo-models-ts", encodedTs);
-  console.log("algo-models-rs", btyesForSigning);
-  console.log("algo-models-rs", msgpack.decode(btyesForSigning.slice(2)));
-  console.log("algo-models-ts", msgpack.decode(encodedTs.slice(2)));
 
   if (encodedTs.toString() !== btyesForSigning.toString()) {
     throw new Error("Encoded transactions are not equal");

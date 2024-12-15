@@ -186,11 +186,10 @@ function getArrayU8FromWasm0(ptr, len) {
 }
 /**
  * @param {PayTransactionFields} tx
- * @param {boolean | undefined} [encode_for_signing]
  * @returns {Uint8Array}
  */
-export function encodePayment(tx, encode_for_signing) {
-    const ret = wasm.encodePayment(tx, isLikeNone(encode_for_signing) ? 0xFFFFFF : encode_for_signing ? 1 : 0);
+export function encodePayment(tx) {
+    const ret = wasm.encodePayment(tx);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -215,11 +214,10 @@ export function decodePayment(bytes) {
 
 /**
  * @param {AssetTransferTransactionFields} tx
- * @param {boolean | undefined} [encode_for_signing]
  * @returns {Uint8Array}
  */
-export function encodeAssetTransfer(tx, encode_for_signing) {
-    const ret = wasm.encodeAssetTransfer(tx, isLikeNone(encode_for_signing) ? 0xFFFFFF : encode_for_signing ? 1 : 0);
+export function encodeAssetTransfer(tx) {
+    const ret = wasm.encodeAssetTransfer(tx);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
