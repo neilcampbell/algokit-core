@@ -31,15 +31,17 @@ async function main() {
   const encoded: Uint8Array = tx.encode(); // encoded msg ready - to be signed with EdDSA
 
   const fields = {
-    sender: tx.snd,
+    header: {
+      sender: tx.snd,
+      fee: tx.fee,
+      transaction_type: "Payment",
+      first_valid: tx.fv,
+      last_valid: tx.lv,
+      genesis_hash: tx.gh,
+      genesis_id: tx.gen,
+    },
     receiver: tx.rcv,
     amount: tx.amt,
-    fee: tx.fee,
-    transaction_type: "Payment",
-    first_valid: tx.fv,
-    last_valid: tx.lv,
-    genesis_hash: tx.gh,
-    genesis_id: tx.gen,
   } as PayTransactionFields;
 
   const encoded2 = encode_payment(fields);

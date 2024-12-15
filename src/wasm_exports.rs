@@ -81,7 +81,6 @@ pub struct TransactionHeader {
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct PayTransactionFields {
-    #[serde(flatten)]
     header: TransactionHeader,
 
     receiver: ByteBuf,
@@ -96,7 +95,6 @@ pub struct PayTransactionFields {
 #[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 pub struct AssetTransferTransactionFields {
-    #[serde(flatten)]
     header: TransactionHeader,
 
     asset_id: u64,
