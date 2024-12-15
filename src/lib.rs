@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
 
-mod wasm_exports;
+mod foreign_exports;
 
 #[cfg(not(target_arch = "wasm32"))]
 uniffi::setup_scaffolding!();
