@@ -29,6 +29,7 @@ pub enum MsgPackError {
 
 pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
     /// msgpack encoding of the transaction with keys sorted and empty fields omitted
+    /// Use `encode_raw` for encoding transactions for signing
     fn encode_raw(&self) -> Result<Vec<u8>, MsgPackError> {
         // First serialize to a temporary buffer to get the map entries
         let mut temp_buf = Vec::new();
@@ -39,30 +40,20 @@ pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
         self.serialize(&mut temp_serializer)
             .map_err(|_| MsgPackError::SerializeError)?;
 
-        // Deserialize into a BTreeMap to sort
-        let sorted_map: BTreeMap<String, rmpv::Value> = rmpv::ext::from_value(
-            rmpv::decode::read_value(&mut temp_buf.as_slice())
-                .map_err(|_| MsgPackError::RmpvDecodeError)?,
-        )
-        .map_err(|_| MsgPackError::RmpvConvertError)?;
+        // Deserialize into a Value and sort recursively
+        let value = rmpv::decode::read_value(&mut temp_buf.as_slice())
+            .map_err(|_| MsgPackError::RmpvDecodeError)?;
+        let sorted_value = sort_msgpack_value(value);
 
-        // Serialize the sorted map
+        // Serialize the sorted value
         let mut final_buf = Vec::new();
-        rmpv::encode::write_value(
-            &mut final_buf,
-            &rmpv::Value::Map(
-                sorted_map
-                    .into_iter()
-                    .map(|(k, v)| (rmpv::Value::String(k.into()), v))
-                    .collect(),
-            ),
-        )
-        .map_err(|_| MsgPackError::RmpvEncodeError)?;
+        rmpv::encode::write_value(&mut final_buf, &sorted_value)
+            .map_err(|_| MsgPackError::RmpvEncodeError)?;
 
         Ok(final_buf)
     }
 
-    /// Decode the bytes without the prefix "TX" (if present)
+    /// Decode the bytes into Self. "TX" prefix is ignored if present
     fn decode(bytes: &[u8]) -> Result<Self, MsgPackError> {
         if bytes[0] == b'T' && bytes[1] == b'X' {
             let without_prefix = bytes[2..].to_vec();
@@ -79,6 +70,35 @@ pub trait AlgorandMsgpack: Serialize + for<'de> Deserialize<'de> {
         buf.extend_from_slice(b"TX");
         buf.extend_from_slice(&encoded);
         Ok(buf)
+    }
+}
+
+fn sort_msgpack_value(value: rmpv::Value) -> rmpv::Value {
+    match value {
+        rmpv::Value::Map(m) => {
+            let mut sorted_map: BTreeMap<String, rmpv::Value> = BTreeMap::new();
+
+            // Convert and sort all key-value pairs
+            for (k, v) in m {
+                if let rmpv::Value::String(key) = k {
+                    let key_str = key.into_str().unwrap_or_default();
+                    sorted_map.insert(key_str, sort_msgpack_value(v));
+                }
+            }
+
+            // Convert back to rmpv::Value::Map
+            rmpv::Value::Map(
+                sorted_map
+                    .into_iter()
+                    .map(|(k, v)| (rmpv::Value::String(k.into()), v))
+                    .collect(),
+            )
+        }
+        rmpv::Value::Array(arr) => {
+            rmpv::Value::Array(arr.into_iter().map(sort_msgpack_value).collect())
+        }
+        // For all other types, return as-is
+        v => v,
     }
 }
 
@@ -224,7 +244,7 @@ impl Transaction {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct SignedTransaction {
-    #[serde(rename = "tx")]
+    #[serde(rename = "txn")]
     transaction: Transaction,
 
     #[serde(rename = "sig")]

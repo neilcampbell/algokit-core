@@ -10,7 +10,7 @@ import * as ed from "@noble/ed25519";
 import * as msgpack from "algo-msgpack-with-bigint";
 
 async function main() {
-  await init();
+  const privKey = ed.utils.randomPrivateKey();
 
   // sample vars
   const genId = "testnet-v1.0";
@@ -29,9 +29,13 @@ async function main() {
 
   // The encoding algorithm is a fork of the actual msgpack (https://github.com/EvanJRichard/msgpack-javascript)
   // After msgpack encoding a TX TAG is added as a prefix to the result.
-  const encodedTs: Uint8Array = tx.encode(); // encoded msg ready - to be signed with EdDSA
+  const bytesForSigningTs: Uint8Array = tx.encode(); // encoded msg ready - to be signed with EdDSA
+
+  const sigTs = await ed.signAsync(bytesForSigningTs, privKey);
+  const signedTxTs = algoCrafter.addSignature(bytesForSigningTs, sigTs);
 
   // Now for the Rust version...
+  await init(); // init the wasm module
 
   const fields = {
     header: {
@@ -50,16 +54,23 @@ async function main() {
   const btyesForSigning = encodePayment(fields);
 
   // Signing with a ed25519 lib that has no idea about Algorand
-  const privKey = ed.utils.randomPrivateKey();
   const sig = await ed.signAsync(btyesForSigning, privKey);
   const signedTx = attachSignature(btyesForSigning, sig);
 
-  console.log("signedTx", msgpack.decode(signedTx));
-
-  if (encodedTs.toString() !== btyesForSigning.toString()) {
+  if (btyesForSigning.toString() !== bytesForSigningTs.toString()) {
+    console.error("TS:", msgpack.decode(signedTxTs.slice(2)));
+    console.error("Rust:", msgpack.decode(signedTx.slice(2)));
     throw new Error("Encoded transactions are not equal");
   } else {
     console.log("Encoded transactions are equal");
+  }
+
+  if (signedTxTs.toString() !== signedTx.toString()) {
+    console.error("TS:", msgpack.decode(signedTxTs));
+    console.error("Rust:", msgpack.decode(signedTx));
+    throw new Error("Signed transactions are not equal");
+  } else {
+    console.log("Signed transactions are equal");
   }
 }
 
