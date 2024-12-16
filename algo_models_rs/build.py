@@ -64,7 +64,7 @@ else:
 
 if build_mode == "py":
     run(
-        "cargo --color always run --bin uniffi-bindgen generate --library target/release/libalgo_models_rs.dylib --language python --out-dir tests/py"
+        "cargo --color always run --bin uniffi-bindgen generate --library ../target/release/libalgo_models_rs.dylib --language python --out-dir tests/py"
     )
 
     extension = None
@@ -72,12 +72,12 @@ if build_mode == "py":
     # Determine what the extension of the library is
     extensions = ("dylib", "so", "dll")
     for ext in extensions:
-        if os.path.exists(f"target/release/libalgo_models_rs.{ext}"):
+        if os.path.exists(f"../target/release/libalgo_models_rs.{ext}"):
             extension = ext
             break
 
     copy_args = [
-        f"target/release/libalgo_models_rs.{extension}",
+        f"../target/release/libalgo_models_rs.{extension}",
         f"tests/py/libalgo_models_rs.{extension}",
     ]
 
