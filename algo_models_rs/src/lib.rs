@@ -1,4 +1,3 @@
-use rmp_serde;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
