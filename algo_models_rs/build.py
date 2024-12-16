@@ -54,13 +54,13 @@ if len(sys.argv) > 1:
     build_mode = sys.argv[1]
 
 if build_mode == "wasm":
-    run("wasm-pack build --target web --out-dir ./tests/js/pkg -- --color always")
+    run("wasm-pack build --target web --out-dir ./tests/js/pkg -- --color always --features ffi_wasm")
 
     # Remove the generated .gitignore file from the pkg directory
     if os.path.exists("tests/js/pkg/.gitignore"):
         os.remove("tests/js/pkg/.gitignore")
 else:
-    run("cargo --color always build --release")
+    run("cargo --color always build --release --features ffi_uniffi")
 
 if build_mode == "py":
     run(

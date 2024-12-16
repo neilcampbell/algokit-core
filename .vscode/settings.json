@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.cargo.features": [
+        "ffi_wasm",
+        "ffi_uniffi"
+    ]
+}

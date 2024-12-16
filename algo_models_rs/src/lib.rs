@@ -5,10 +5,10 @@ use thiserror::Error;
 
 mod foreign_exports;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "ffi_uniffi")]
 uniffi::setup_scaffolding!();
 
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Error))]
+#[cfg_attr(feature = "ffi_uniffi", derive(uniffi::Error))]
 #[derive(Debug, Error)]
 pub enum MsgPackError {
     #[error("Failed to serialize transaction")]

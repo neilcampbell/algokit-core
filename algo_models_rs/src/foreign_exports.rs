@@ -1,15 +1,18 @@
-#[cfg(not(target_arch = "wasm32"))]
-use crate::UniffiCustomTypeConverter;
-#[cfg(not(target_arch = "wasm32"))]
-use uniffi::{self};
-
 use crate::{AlgorandMsgpack, MsgPackError};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
+
+#[cfg(feature = "ffi_uniffi")]
+use crate::UniffiCustomTypeConverter;
+#[cfg(feature = "ffi_uniffi")]
+use uniffi::{self};
+
+#[cfg(feature = "ffi_wasm")]
 use tsify_next::Tsify;
+#[cfg(feature = "ffi_wasm")]
 use wasm_bindgen::prelude::*;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "ffi_uniffi")]
 impl UniffiCustomTypeConverter for ByteBuf {
     type Builtin = Vec<u8>;
 
@@ -22,19 +25,20 @@ impl UniffiCustomTypeConverter for ByteBuf {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "ffi_uniffi")]
 uniffi::custom_type!(ByteBuf, Vec<u8>);
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "ffi_wasm")]
 impl From<MsgPackError> for JsValue {
     fn from(e: MsgPackError) -> Self {
         JsValue::from(e.to_string())
     }
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Enum))]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "ffi_wasm", derive(Tsify))]
+#[cfg_attr(feature = "ffi_wasm", tsify(into_wasm_abi, from_wasm_abi))]
+#[cfg_attr(feature = "ffi_uniffi", derive(uniffi::Enum))]
 pub enum TransactionType {
     Payment,
     AssetTransfer,
@@ -44,10 +48,14 @@ pub enum TransactionType {
     ApplicationCall,
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "ffi_wasm", derive(Tsify))]
+#[cfg_attr(
+    feature = "ffi_wasm",
+    tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)
+)]
+#[cfg_attr(feature = "ffi_wasm", serde(rename_all = "camelCase"))]
+#[cfg_attr(feature = "ffi_uniffi", derive(uniffi::Record))]
 /// The transaction header contains the fields that can be present in any transaction.
 /// "Header" only indicates that these are common fields, NOT that they are the first fields in the transaction.
 pub struct TransactionHeader {
@@ -63,29 +71,33 @@ pub struct TransactionHeader {
 
     last_valid: u64,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     genesis_hash: Option<ByteBuf>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     genesis_id: Option<String>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     note: Option<ByteBuf>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     rekey_to: Option<ByteBuf>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     lease: Option<ByteBuf>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     group: Option<ByteBuf>,
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "ffi_wasm", derive(Tsify))]
+#[cfg_attr(
+    feature = "ffi_wasm",
+    tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)
+)]
+#[cfg_attr(feature = "ffi_wasm", serde(rename_all = "camelCase"))]
+#[cfg_attr(feature = "ffi_uniffi", derive(uniffi::Record))]
 pub struct PayTransactionFields {
     header: TransactionHeader,
 
@@ -93,14 +105,18 @@ pub struct PayTransactionFields {
 
     amount: u64,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     close_remainder_to: Option<ByteBuf>,
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "ffi_wasm", derive(Tsify))]
+#[cfg_attr(
+    feature = "ffi_wasm",
+    tsify(into_wasm_abi, from_wasm_abi, large_number_types_as_bigints)
+)]
+#[cfg_attr(feature = "ffi_wasm", serde(rename_all = "camelCase"))]
+#[cfg_attr(feature = "ffi_uniffi", derive(uniffi::Record))]
 pub struct AssetTransferTransactionFields {
     header: TransactionHeader,
 
@@ -110,10 +126,10 @@ pub struct AssetTransferTransactionFields {
 
     receiver: ByteBuf,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     asset_sender: Option<ByteBuf>,
 
-    #[tsify(optional)]
+    #[cfg_attr(feature = "ffi_wasm", tsify(optional))]
     close_remainder_to: Option<ByteBuf>,
 }
 
@@ -230,10 +246,11 @@ impl From<crate::TransactionType> for TransactionType {
 }
 
 #[cfg_attr(
-    target_arch = "wasm32",
+    feature = "ffi_wasm",
     wasm_bindgen(js_name = "getEncodedTransactionType")
 )]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 
 /// Get the transaction type from the encoded transaction.
 /// This is particularly useful when decoding a transaction that has a unknow type
@@ -243,36 +260,41 @@ pub fn get_encoded_transaction_type(bytes: &[u8]) -> Result<TransactionType, Msg
     Ok(header.transaction_type)
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodePayment"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_wasm", wasm_bindgen(js_name = "encodePayment"))]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 pub fn encode_payment(tx: PayTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     let ctx: crate::PayTransactionFields = tx.into();
     ctx.encode()
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodePayment"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_wasm", wasm_bindgen(js_name = "decodePayment"))]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 pub fn decode_payment(bytes: &[u8]) -> Result<PayTransactionFields, MsgPackError> {
     let tx = crate::PayTransactionFields::decode(bytes)?;
     Ok(tx.into())
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "encodeAssetTransfer"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_wasm", wasm_bindgen(js_name = "encodeAssetTransfer"))]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 pub fn encode_asset_transfer(tx: AssetTransferTransactionFields) -> Result<Vec<u8>, MsgPackError> {
     let ctx: crate::AssetTransferTransactionFields = tx.into();
     ctx.encode()
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "decodeAssetTransfer"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_wasm", wasm_bindgen(js_name = "decodeAssetTransfer"))]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 pub fn decode_asset_transfer(bytes: &[u8]) -> Result<AssetTransferTransactionFields, MsgPackError> {
     let tx = crate::AssetTransferTransactionFields::decode(bytes)?;
     Ok(tx.into())
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen(js_name = "attachSignature"))]
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(feature = "ffi_wasm", wasm_bindgen(js_name = "attachSignature"))]
+#[cfg_attr(feature = "ffi_uniffi", uniffi::export)]
+#[allow(dead_code)]
 pub fn attach_signature(encoded_tx: &[u8], signature: &[u8]) -> Result<Vec<u8>, MsgPackError> {
     let encoded_tx = crate::Transaction::decode(encoded_tx)?;
     let signed_tx = crate::SignedTransaction {
