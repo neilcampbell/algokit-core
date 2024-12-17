@@ -1,7 +1,7 @@
 ---
 status: proposed
 date: 2024-12-17
-decision-makers: Joe Polny, David Rojas, Bruno Martins
+decision-makers: Bruno Martins, Joe Polny, David Rojas
 consulted: Algorand Foundation CTO office, MakerX engineering team
 informed: N/A
 ---
