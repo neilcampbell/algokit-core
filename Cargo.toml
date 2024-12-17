@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["algo_models_rs", "uniffi-bindgen"]
+members = ["algo_models", "uniffi-bindgen"]

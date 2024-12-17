@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "algo-models-rs"
+name = "algo_models"
 version = "0.1.0"
 dependencies = [
  "rmp-serde",

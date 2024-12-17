@@ -1,4 +1,4 @@
-# algo-models-rs
+# algo_models
 
 Rust library for encoding and decoding Algorand transactions. Also includes WASM and Python bindings provided by [wasm-pack](https://github.com/rustwasm/wasm-pack) and [uniffi-rs](https://github.com/mozilla/uniffi-rs).
 
@@ -6,9 +6,9 @@ Rust library for encoding and decoding Algorand transactions. Also includes WASM
 
 - [src/lib.rs](src/lib.rs): Core Rust library
 - [src/foreign_exports.rs](src/foreign_exports.rs): Wrappers around the Rust library for the WASM and Python bindings
-- [tests/js/pkg/algo_models_rs.js](tests/js/pkg/algo_models_rs.js): auto-generated WASM bindings
+- [tests/js/pkg/algo_models.js](tests/js/pkg/algo_models.js): auto-generated WASM bindings
 - [tests/js/index.ts](tests/js/index.ts): example of using the WASM bindings
-- [tests/py/algo_models_rs.py](tests/py/algo_models_rs.py): auto-generated Python bindings
+- [tests/py/algo_models.py](tests/py/algo_models.py): auto-generated Python bindings
 - [tests/py/app.py](tests/py/app.py): example of using the Python bindings
 - [build.py](build.py): script to build the WASM and Python bindings
 
