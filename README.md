@@ -1,6 +1,6 @@
 # Algorand-Rust-FFIs
 
-This is a Rust workspace for Rust implementations of core Algorand functionality that is exposed to other languages via FFIs.
+This is a cargo workspace for Rust implementations of core Algorand functionality that is exposed to other languages via FFIs.
 
 ## Crates
 
