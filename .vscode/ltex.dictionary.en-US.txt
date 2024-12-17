@@ -1,0 +1,14 @@
+Algorand
+UniFFI
+toolchain
+toolchains
+wasm-pack
+keypair
+Algokit
+algo
+Toolchain
+msgpack
+Algorand-Rust-FFIs
+FFIs
+uniffi-rs
+py

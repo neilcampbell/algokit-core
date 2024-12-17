@@ -4,7 +4,7 @@ This is a cargo workspace for Rust implementations of core Algorand functionalit
 
 ## Crates
 
-- [algo_models](./crates/algo_models) - Currently a spike to determine feasability of using UniFFI and wasm-pack. Handles msgpack encoding and decoding of Algorand transactions and allows attaching signatures to transactions.
+- [algo_models](./crates/algo_models) - Currently a spike to determine feasibility of using UniFFI and wasm-pack. Handles msgpack encoding and decoding of Algorand transactions and allows attaching signatures to transactions.
 
 ## ADRs
 

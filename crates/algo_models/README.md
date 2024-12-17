@@ -16,11 +16,11 @@ Rust library for encoding and decoding Algorand transactions. Also includes WASM
 
 ### Idiomatic Rust
 
-The core library should be idiomatic Rust. This is essential for maintainability and ease of use. This may result in some extra wrappers around the Rust library for the WASM and FFI bindings because the foreign languages and/or their binding generators might not support all of the Rust features.
+The core library should be idiomatic Rust. This is essential for maintainability and ease of use. This may result in some extra wrappers around the Rust library for the WASM and FFI bindings because the foreign languages and/or their binding generators might not support all the Rust features.
 
 ### Foreign Interface Consistency
 
-All of the foreign bindings should have consistent interfaces. The way things are done in Python should be the same as the way things are done in JavaScript. Finding the lowest common denominator between languages is the goal, which comes with the trade-off that we might not be fully leveraging foreign language features.
+All the foreign bindings should have consistent interfaces. The way things are done in Python should be the same as the way things are done in JavaScript. Finding the lowest common denominator between languages is the goal, which comes with the trade-off that we might not be fully leveraging foreign language features.
 
 ### Purely Functional Foreign Interfaces
 
