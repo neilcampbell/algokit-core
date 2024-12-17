@@ -1,4 +1,4 @@
-# algo-rs-ffi
+# Algorand-Rust-FFIs
 
 This is a Rust workspace for Rust implementations of core Algorand functionality that is exposed to other languages via FFIs.
 
