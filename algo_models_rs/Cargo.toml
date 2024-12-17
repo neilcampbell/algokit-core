@@ -19,7 +19,7 @@ serde_bytes = "0.11.15"
 serde_json = "1.0.133"
 thiserror = "2.0.7"
 tsify-next = {version = "0.5.4", features = ["js"], optional = true}
-uniffi = { version = "0.28.3", features=["scaffolding-ffi-buffer-fns", "cli"], optional = true }
+uniffi = { version = "0.28.3", features=["scaffolding-ffi-buffer-fns"], optional = true }
 wasm-bindgen = {version = "0.2.99", optional = true}
 
 [dev-dependencies]
@@ -29,7 +29,3 @@ uniffi = { version = "0.28.3", features = ["bindgen-tests"] }
 [build-dependencies]
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
 uniffi = { version = "0.28.3", features = ["build", "scaffolding-ffi-buffer-fns"] }
-
-[[bin]]
-name = "uniffi-bindgen"
-path = "uniffi-bindgen.rs"

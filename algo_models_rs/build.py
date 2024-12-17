@@ -14,38 +14,35 @@ def run(command):
     Args:
         command (list): Command and arguments as a list (e.g., ["ls", "-la"])
     """
-    try:
-        print(f"Running '{command}'")
-        process = subprocess.Popen(
-            command.split(" "),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+    print(f"Running '{command}'")
+    process = subprocess.Popen(
+        command.split(" "),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
-        # Use select to read from stdout and stderr without blocking
-        while True:
-            reads = [process.stdout.fileno(), process.stderr.fileno()]
-            ret = select.select(reads, [], [])
+    # Use select to read from stdout and stderr without blocking
+    while True:
+        reads = [process.stdout.fileno(), process.stderr.fileno()]
+        ret = select.select(reads, [], [])
 
-            for fd in ret[0]:
-                if fd == process.stdout.fileno():
-                    line = process.stdout.readline()
-                    if line:
-                        sys.stdout.buffer.write(line)
-                        sys.stdout.buffer.flush()
-                if fd == process.stderr.fileno():
-                    line = process.stderr.readline()
-                    if line:
-                        sys.stderr.buffer.write(line)
-                        sys.stderr.buffer.flush()
+        for fd in ret[0]:
+            if fd == process.stdout.fileno():
+                line = process.stdout.readline()
+                if line:
+                    sys.stdout.buffer.write(line)
+                    sys.stdout.buffer.flush()
+            if fd == process.stderr.fileno():
+                line = process.stderr.readline()
+                if line:
+                    sys.stderr.buffer.write(line)
+                    sys.stderr.buffer.flush()
 
-            if process.poll() is not None:
-                break
+        if process.poll() is not None:
+            break
 
-        return process.wait()
-
-    except Exception as e:
-        print(f"Error running subprocess: {e}")
+    if process.wait() != 0:
+        sys.exit(process.returncode)
 
 
 build_mode = "rust"
@@ -54,7 +51,9 @@ if len(sys.argv) > 1:
     build_mode = sys.argv[1]
 
 if build_mode == "wasm":
-    run("wasm-pack build --target web --out-dir ./tests/js/pkg -- --color always --features ffi_wasm")
+    run(
+        "wasm-pack build --target web --out-dir ./tests/js/pkg -- --color always --features ffi_wasm"
+    )
 
     # Remove the generated .gitignore file from the pkg directory
     if os.path.exists("tests/js/pkg/.gitignore"):
@@ -64,7 +63,7 @@ else:
 
 if build_mode == "py":
     run(
-        "cargo --color always run --bin uniffi-bindgen generate --library ../target/release/libalgo_models_rs.dylib --language python --out-dir tests/py"
+        "cargo --color always run -p uniffi-bindgen generate --library ../target/release/libalgo_models_rs.dylib --language python --out-dir tests/py"
     )
 
     extension = None
