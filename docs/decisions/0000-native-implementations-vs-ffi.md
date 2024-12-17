@@ -26,7 +26,7 @@ It is desireable for the Algorand Foundation to create and maintain libraries fo
 
 ## Decision Outcome
 
-TBD. Currently leaning towards "Core Rust implementation with generated FFI-bindings using UniFFI and wasm-pack" with the intitial spike in [./algo_models](https://github.com/algorand-foundation/algo_models).
+TBD. Currently leaning towards "Core Rust implementation with generated FFI-bindings using UniFFI and wasm-pack" with the intitial spike of [algo_models](../../crates/algo_models/).
 
 ### Confirmation
 
