@@ -23,3 +23,17 @@ The exported interfaces should be purely functional without any state owned by R
 ## ADRs
 
 [./docs/decisions](./docs/decisions) contains the ADRs for this project. Specific implementations might have their own ADRs in their respective directories.
+
+## Research
+
+[./docs/research](./docs/research/) contains various Markdown documents summarize research related to this project
+
+## Contributing
+
+### Learning Resources
+
+If you are new to Rust or UniFFI, check out the [learning resources document](./docs/contributing/learning_resources.md)
+
+### Contributing Guide
+
+See the [contributing guide](./docs/contributing/contributing_guide.md) for recommended editors settings and other guidelines for contribution.
