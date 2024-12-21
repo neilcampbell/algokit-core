@@ -38,10 +38,6 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "thiserror 2.0.7",
- "tsify-next",
- "uniffi",
- "wasm-bindgen",
- "wasm-pack",
 ]
 
 [[package]]
@@ -50,7 +46,6 @@ version = "0.1.0"
 dependencies = [
  "algo_models",
  "rmp-serde",
- "rmpv",
  "serde",
  "serde_bytes",
  "thiserror 2.0.7",

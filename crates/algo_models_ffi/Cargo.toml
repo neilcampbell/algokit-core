@@ -12,11 +12,10 @@ ffi_wasm = ["dep:wasm-bindgen", "dep:tsify-next"]
 ffi_uniffi = ["dep:uniffi"]
 
 [dependencies]
-algo_models = { path = "../algo_models", features = ["ffi_uniffi"] }
+algo_models = { path = "../algo_models" }
 
 thiserror = "2.0.7"
 rmp-serde = "1.3.0"
-rmpv = { version = "1.3.0", features = ["with-serde"] }
 serde = { version = "1.0.216", features = ["derive"] }
 serde_bytes = "0.11.15"
 
