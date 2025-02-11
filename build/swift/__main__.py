@@ -56,8 +56,8 @@ for fat_target_name in fat_targets:
 swift_package = to_pascal_case(crate)
 create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output build/swift/{swift_package}/Frameworks/{crate}.xcframework"
 
-if os.path.exists(f"target/debug/{crate}.xcframework"):
-    shutil.rmtree(f"target/debug/{crate}.xcframework")
+if os.path.exists(f"build/swift/{swift_package}/Frameworks/{crate}.xcframework"):
+    shutil.rmtree(f"build/swift/{swift_package}/Frameworks/{crate}.xcframework")
 
 # xcframework needs the modulemap to be named module.modulemap
 os.rename(
