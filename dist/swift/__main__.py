@@ -49,15 +49,13 @@ for fat_target_name in fat_targets:
     run(
         f"lipo -create {' '.join(lib_paths)} -output target/debug/lib{crate}_ffi-{fat_target_name}.dylib",
     )
-    create_xcf_cmd += (
-        f" -library target/debug/lib{crate}_ffi-{fat_target_name}.dylib"
-    )
+    create_xcf_cmd += f" -library target/debug/lib{crate}_ffi-{fat_target_name}.dylib"
 
 swift_package = to_pascal_case(crate)
-create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output build/swift/{swift_package}/Frameworks/{crate}.xcframework"
+create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output dist/swift/{swift_package}/Frameworks/{crate}.xcframework"
 
-if os.path.exists(f"build/swift/{swift_package}/Frameworks/{crate}.xcframework"):
-    shutil.rmtree(f"build/swift/{swift_package}/Frameworks/{crate}.xcframework")
+if os.path.exists(f"dist/swift/{swift_package}/Frameworks/{crate}.xcframework"):
+    shutil.rmtree(f"dist/swift/{swift_package}/Frameworks/{crate}.xcframework")
 
 # xcframework needs the modulemap to be named module.modulemap
 os.rename(
@@ -72,7 +70,9 @@ os.rename(
 with open(f"target/debug/swift/{crate}/{crate}.swift", "r") as file:
     content = file.read()
 
-content = content.replace("private var initializationResult", "private let initializationResult")
+content = content.replace(
+    "private var initializationResult", "private let initializationResult"
+)
 
 with open(f"target/debug/swift/{crate}/{crate}.swift", "w") as file:
     file.write(content)
@@ -82,6 +82,6 @@ run(create_xcf_cmd)
 
 shutil.move(
     f"target/debug/swift/{crate}/{crate}.swift",
-    f"build/swift/{swift_package}/Sources/{swift_package}/{swift_package}.swift",
+    f"dist/swift/{swift_package}/Sources/{swift_package}/{swift_package}.swift",
 )
-print(f"Updated {swift_package} in build/swift/{swift_package}")
+print(f"Updated {swift_package} in dist/swift/{swift_package}")
