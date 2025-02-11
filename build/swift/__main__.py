@@ -53,7 +53,8 @@ for fat_target_name in fat_targets:
         f" -library target/debug/lib{crate}_ffi-{fat_target_name}.dylib"
     )
 
-create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output target/debug/{crate}.xcframework"
+swift_package = to_pascal_case(crate)
+create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output build/swift/{swift_package}/Frameworks/{crate}.xcframework"
 
 if os.path.exists(f"target/debug/{crate}.xcframework"):
     shutil.rmtree(f"target/debug/{crate}.xcframework")
@@ -79,9 +80,8 @@ with open(f"target/debug/swift/{crate}/{crate}.swift", "w") as file:
 
 run(create_xcf_cmd)
 
-swift_module = to_pascal_case(crate)
 shutil.move(
     f"target/debug/swift/{crate}/{crate}.swift",
-    f"build/swift/{swift_module}/Sources/{swift_module}/{swift_module}.swift",
+    f"build/swift/{swift_package}/Sources/{swift_package}/{swift_package}.swift",
 )
-print(f"Updated {swift_module} in build/swift/{swift_module}")
+print(f"Updated {swift_package} in build/swift/{swift_package}")
