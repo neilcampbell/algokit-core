@@ -1,3 +1,3 @@
-from .. import run
+from .. import run, crate
 
-run("maturin build -m crates/algo_models_ffi/Cargo.toml")
+run(f"maturin build -m crates/{crate}_ffi/Cargo.toml")
