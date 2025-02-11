@@ -16,7 +16,7 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .binaryTarget(
             name: "algo_modelsFFI",
-            path: "../../../../../target/debug/algo_models.xcframework"
+            path: "../../../target/debug/algo_models.xcframework"
         ),
         .target(
             name: "AlgoModels",
