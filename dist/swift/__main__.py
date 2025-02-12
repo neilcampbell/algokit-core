@@ -39,7 +39,7 @@ run(
 
 create_xcf_cmd = "xcodebuild -create-xcframework"
 for target in targets:
-    create_xcf_cmd += f" -library target/{target}/debug/lib{crate}_ffi.dylib"
+    create_xcf_cmd += f" -library target/{target}/debug/lib{crate}_ffi.dylib -headers target/debug/swift/{crate}/"
 
 for fat_target_name in fat_targets:
     lib_paths: list[str] = []
@@ -49,10 +49,10 @@ for fat_target_name in fat_targets:
     run(
         f"lipo -create {' '.join(lib_paths)} -output target/debug/lib{crate}_ffi-{fat_target_name}.dylib",
     )
-    create_xcf_cmd += f" -library target/debug/lib{crate}_ffi-{fat_target_name}.dylib"
+    create_xcf_cmd += f" -library target/debug/lib{crate}_ffi-{fat_target_name}.dylib -headers target/debug/swift/{crate}/"
 
 swift_package = to_pascal_case(crate)
-create_xcf_cmd += f" -headers target/debug/swift/{crate}/ -output dist/swift/{swift_package}/Frameworks/{crate}.xcframework"
+create_xcf_cmd += f" -output dist/swift/{swift_package}/Frameworks/{crate}.xcframework"
 
 if os.path.exists(f"dist/swift/{swift_package}/Frameworks/{crate}.xcframework"):
     shutil.rmtree(f"dist/swift/{swift_package}/Frameworks/{crate}.xcframework")
