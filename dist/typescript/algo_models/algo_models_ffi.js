@@ -185,11 +185,11 @@ function getArrayU8FromWasm0(ptr, len) {
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
 }
 /**
- * @param {PayTransactionFields} tx
+ * @param {Transaction} tx
  * @returns {Uint8Array}
  */
-export function encodePayment(tx) {
-    const ret = wasm.encodePayment(tx);
+export function encodeTransaction(tx) {
+    const ret = wasm.encodeTransaction(tx);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -200,40 +200,12 @@ export function encodePayment(tx) {
 
 /**
  * @param {Uint8Array} bytes
- * @returns {PayTransactionFields}
+ * @returns {Transaction}
  */
-export function decodePayment(bytes) {
+export function decodeTransaction(bytes) {
     const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decodePayment(ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {AssetTransferTransactionFields} tx
- * @returns {Uint8Array}
- */
-export function encodeAssetTransfer(tx) {
-    const ret = wasm.encodeAssetTransfer(tx);
-    if (ret[3]) {
-        throw takeFromExternrefTable0(ret[2]);
-    }
-    var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
-    return v1;
-}
-
-/**
- * @param {Uint8Array} bytes
- * @returns {AssetTransferTransactionFields}
- */
-export function decodeAssetTransfer(bytes) {
-    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decodeAssetTransfer(ptr0, len0);
+    const ret = wasm.decodeTransaction(ptr0, len0);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }

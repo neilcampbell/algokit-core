@@ -3,7 +3,7 @@ import Testing
 
 @testable import AlgoModels
 
-@Test func encodePayment() throws {
+@Test func decodePayment() throws {
     let uint8Array: [UInt8] = [
         84,
         88,
@@ -178,6 +178,6 @@ import Testing
         97,
         121,
     ]
-    let payment = try AlgoModels.decodePayment(bytes: Data(uint8Array))
+    let payment = try AlgoModels.decodeTransaction(bytes: Data(uint8Array))
     print(payment)
 }
