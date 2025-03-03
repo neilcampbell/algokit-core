@@ -481,7 +481,7 @@ public struct AssetTransferTransactionFields {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(assetId: UInt64, amount: UInt64, receiver: ByteBuf, assetSender: ByteBuf?, closeRemainderTo: ByteBuf?) {
+    public init(assetId: UInt64, amount: UInt64, receiver: ByteBuf, assetSender: ByteBuf? = nil, closeRemainderTo: ByteBuf? = nil) {
         self.assetId = assetId
         self.amount = amount
         self.receiver = receiver
@@ -569,7 +569,7 @@ public struct PayTransactionFields {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(receiver: ByteBuf, amount: UInt64, closeRemainderTo: ByteBuf?) {
+    public init(receiver: ByteBuf, amount: UInt64, closeRemainderTo: ByteBuf? = nil) {
         self.receiver = receiver
         self.amount = amount
         self.closeRemainderTo = closeRemainderTo
@@ -643,7 +643,7 @@ public struct Transaction {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(header: TransactionHeader, payFields: PayTransactionFields?, assetTransferFields: AssetTransferTransactionFields?) {
+    public init(header: TransactionHeader, payFields: PayTransactionFields? = nil, assetTransferFields: AssetTransferTransactionFields? = nil) {
         self.header = header
         self.payFields = payFields
         self.assetTransferFields = assetTransferFields
@@ -741,7 +741,7 @@ public struct TransactionHeader {
          */transactionType: TransactionType, 
         /**
          * The sender of the transaction
-         */sender: ByteBuf, fee: UInt64, firstValid: UInt64, lastValid: UInt64, genesisHash: ByteBuf?, genesisId: String?, note: ByteBuf?, rekeyTo: ByteBuf?, lease: ByteBuf?, group: ByteBuf?) {
+         */sender: ByteBuf, fee: UInt64, firstValid: UInt64, lastValid: UInt64, genesisHash: ByteBuf?, genesisId: String?, note: ByteBuf? = nil, rekeyTo: ByteBuf? = nil, lease: ByteBuf? = nil, group: ByteBuf? = nil) {
         self.transactionType = transactionType
         self.sender = sender
         self.fee = fee
