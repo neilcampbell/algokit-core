@@ -5,10 +5,8 @@
  * This is particularly useful when decoding a transaction that has a unknow type
  */
 export function getEncodedTransactionType(bytes: Uint8Array): TransactionType;
-export function encodePayment(tx: PayTransactionFields): Uint8Array;
-export function decodePayment(bytes: Uint8Array): PayTransactionFields;
-export function encodeAssetTransfer(tx: AssetTransferTransactionFields): Uint8Array;
-export function decodeAssetTransfer(bytes: Uint8Array): AssetTransferTransactionFields;
+export function encodeTransaction(tx: Transaction): Uint8Array;
+export function decodeTransaction(bytes: Uint8Array): Transaction;
 export function attachSignature(encoded_tx: Uint8Array, signature: Uint8Array): Uint8Array;
 export type TransactionType = "Payment" | "AssetTransfer" | "AssetFreeze" | "AssetConfig" | "KeyRegistration" | "ApplicationCall";
 
@@ -37,19 +35,23 @@ export interface TransactionHeader {
 }
 
 export interface PayTransactionFields {
-    header: TransactionHeader;
     receiver: Uint8Array;
     amount: bigint;
     closeRemainderTo?: Uint8Array;
 }
 
 export interface AssetTransferTransactionFields {
-    header: TransactionHeader;
     assetId: bigint;
     amount: bigint;
     receiver: Uint8Array;
     assetSender?: Uint8Array;
     closeRemainderTo?: Uint8Array;
+}
+
+export interface Transaction {
+    header: TransactionHeader;
+    payFields?: PayTransactionFields;
+    assetTransferFields?: AssetTransferTransactionFields;
 }
 
 
@@ -58,10 +60,8 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly getEncodedTransactionType: (a: number, b: number) => [number, number, number];
-  readonly encodePayment: (a: any) => [number, number, number, number];
-  readonly decodePayment: (a: number, b: number) => [number, number, number];
-  readonly encodeAssetTransfer: (a: any) => [number, number, number, number];
-  readonly decodeAssetTransfer: (a: number, b: number) => [number, number, number];
+  readonly encodeTransaction: (a: any) => [number, number, number, number];
+  readonly decodeTransaction: (a: number, b: number) => [number, number, number];
   readonly attachSignature: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

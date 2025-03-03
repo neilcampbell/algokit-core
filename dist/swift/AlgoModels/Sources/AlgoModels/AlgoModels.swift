@@ -473,7 +473,6 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
 
 
 public struct AssetTransferTransactionFields {
-    public var header: TransactionHeader
     public var assetId: UInt64
     public var amount: UInt64
     public var receiver: ByteBuf
@@ -482,8 +481,7 @@ public struct AssetTransferTransactionFields {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(header: TransactionHeader, assetId: UInt64, amount: UInt64, receiver: ByteBuf, assetSender: ByteBuf?, closeRemainderTo: ByteBuf?) {
-        self.header = header
+    public init(assetId: UInt64, amount: UInt64, receiver: ByteBuf, assetSender: ByteBuf? = nil, closeRemainderTo: ByteBuf? = nil) {
         self.assetId = assetId
         self.amount = amount
         self.receiver = receiver
@@ -496,9 +494,6 @@ public struct AssetTransferTransactionFields {
 
 extension AssetTransferTransactionFields: Equatable, Hashable {
     public static func ==(lhs: AssetTransferTransactionFields, rhs: AssetTransferTransactionFields) -> Bool {
-        if lhs.header != rhs.header {
-            return false
-        }
         if lhs.assetId != rhs.assetId {
             return false
         }
@@ -518,7 +513,6 @@ extension AssetTransferTransactionFields: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(header)
         hasher.combine(assetId)
         hasher.combine(amount)
         hasher.combine(receiver)
@@ -535,7 +529,6 @@ public struct FfiConverterTypeAssetTransferTransactionFields: FfiConverterRustBu
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssetTransferTransactionFields {
         return
             try AssetTransferTransactionFields(
-                header: FfiConverterTypeTransactionHeader.read(from: &buf), 
                 assetId: FfiConverterUInt64.read(from: &buf), 
                 amount: FfiConverterUInt64.read(from: &buf), 
                 receiver: FfiConverterTypeByteBuf.read(from: &buf), 
@@ -545,7 +538,6 @@ public struct FfiConverterTypeAssetTransferTransactionFields: FfiConverterRustBu
     }
 
     public static func write(_ value: AssetTransferTransactionFields, into buf: inout [UInt8]) {
-        FfiConverterTypeTransactionHeader.write(value.header, into: &buf)
         FfiConverterUInt64.write(value.assetId, into: &buf)
         FfiConverterUInt64.write(value.amount, into: &buf)
         FfiConverterTypeByteBuf.write(value.receiver, into: &buf)
@@ -571,15 +563,13 @@ public func FfiConverterTypeAssetTransferTransactionFields_lower(_ value: AssetT
 
 
 public struct PayTransactionFields {
-    public var header: TransactionHeader
     public var receiver: ByteBuf
     public var amount: UInt64
     public var closeRemainderTo: ByteBuf?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(header: TransactionHeader, receiver: ByteBuf, amount: UInt64, closeRemainderTo: ByteBuf?) {
-        self.header = header
+    public init(receiver: ByteBuf, amount: UInt64, closeRemainderTo: ByteBuf? = nil) {
         self.receiver = receiver
         self.amount = amount
         self.closeRemainderTo = closeRemainderTo
@@ -590,9 +580,6 @@ public struct PayTransactionFields {
 
 extension PayTransactionFields: Equatable, Hashable {
     public static func ==(lhs: PayTransactionFields, rhs: PayTransactionFields) -> Bool {
-        if lhs.header != rhs.header {
-            return false
-        }
         if lhs.receiver != rhs.receiver {
             return false
         }
@@ -606,7 +593,6 @@ extension PayTransactionFields: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(header)
         hasher.combine(receiver)
         hasher.combine(amount)
         hasher.combine(closeRemainderTo)
@@ -621,7 +607,6 @@ public struct FfiConverterTypePayTransactionFields: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PayTransactionFields {
         return
             try PayTransactionFields(
-                header: FfiConverterTypeTransactionHeader.read(from: &buf), 
                 receiver: FfiConverterTypeByteBuf.read(from: &buf), 
                 amount: FfiConverterUInt64.read(from: &buf), 
                 closeRemainderTo: FfiConverterOptionTypeByteBuf.read(from: &buf)
@@ -629,7 +614,6 @@ public struct FfiConverterTypePayTransactionFields: FfiConverterRustBuffer {
     }
 
     public static func write(_ value: PayTransactionFields, into buf: inout [UInt8]) {
-        FfiConverterTypeTransactionHeader.write(value.header, into: &buf)
         FfiConverterTypeByteBuf.write(value.receiver, into: &buf)
         FfiConverterUInt64.write(value.amount, into: &buf)
         FfiConverterOptionTypeByteBuf.write(value.closeRemainderTo, into: &buf)
@@ -649,6 +633,80 @@ public func FfiConverterTypePayTransactionFields_lift(_ buf: RustBuffer) throws 
 #endif
 public func FfiConverterTypePayTransactionFields_lower(_ value: PayTransactionFields) -> RustBuffer {
     return FfiConverterTypePayTransactionFields.lower(value)
+}
+
+
+public struct Transaction {
+    public var header: TransactionHeader
+    public var payFields: PayTransactionFields?
+    public var assetTransferFields: AssetTransferTransactionFields?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(header: TransactionHeader, payFields: PayTransactionFields? = nil, assetTransferFields: AssetTransferTransactionFields? = nil) {
+        self.header = header
+        self.payFields = payFields
+        self.assetTransferFields = assetTransferFields
+    }
+}
+
+
+
+extension Transaction: Equatable, Hashable {
+    public static func ==(lhs: Transaction, rhs: Transaction) -> Bool {
+        if lhs.header != rhs.header {
+            return false
+        }
+        if lhs.payFields != rhs.payFields {
+            return false
+        }
+        if lhs.assetTransferFields != rhs.assetTransferFields {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(header)
+        hasher.combine(payFields)
+        hasher.combine(assetTransferFields)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransaction: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Transaction {
+        return
+            try Transaction(
+                header: FfiConverterTypeTransactionHeader.read(from: &buf), 
+                payFields: FfiConverterOptionTypePayTransactionFields.read(from: &buf), 
+                assetTransferFields: FfiConverterOptionTypeAssetTransferTransactionFields.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Transaction, into buf: inout [UInt8]) {
+        FfiConverterTypeTransactionHeader.write(value.header, into: &buf)
+        FfiConverterOptionTypePayTransactionFields.write(value.payFields, into: &buf)
+        FfiConverterOptionTypeAssetTransferTransactionFields.write(value.assetTransferFields, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransaction_lift(_ buf: RustBuffer) throws -> Transaction {
+    return try FfiConverterTypeTransaction.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransaction_lower(_ value: Transaction) -> RustBuffer {
+    return FfiConverterTypeTransaction.lower(value)
 }
 
 
@@ -683,7 +741,7 @@ public struct TransactionHeader {
          */transactionType: TransactionType, 
         /**
          * The sender of the transaction
-         */sender: ByteBuf, fee: UInt64, firstValid: UInt64, lastValid: UInt64, genesisHash: ByteBuf?, genesisId: String?, note: ByteBuf?, rekeyTo: ByteBuf?, lease: ByteBuf?, group: ByteBuf?) {
+         */sender: ByteBuf, fee: UInt64, firstValid: UInt64, lastValid: UInt64, genesisHash: ByteBuf?, genesisId: String?, note: ByteBuf? = nil, rekeyTo: ByteBuf? = nil, lease: ByteBuf? = nil, group: ByteBuf? = nil) {
         self.transactionType = transactionType
         self.sender = sender
         self.fee = fee
@@ -989,6 +1047,54 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeAssetTransferTransactionFields: FfiConverterRustBuffer {
+    typealias SwiftType = AssetTransferTransactionFields?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAssetTransferTransactionFields.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAssetTransferTransactionFields.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePayTransactionFields: FfiConverterRustBuffer {
+    typealias SwiftType = PayTransactionFields?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePayTransactionFields.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePayTransactionFields.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeByteBuf: FfiConverterRustBuffer {
     typealias SwiftType = ByteBuf?
 
@@ -1061,31 +1167,17 @@ public func attachSignature(encodedTx: Data, signature: Data)throws  -> Data {
     )
 })
 }
-public func decodeAssetTransfer(bytes: Data)throws  -> AssetTransferTransactionFields {
-    return try  FfiConverterTypeAssetTransferTransactionFields.lift(try rustCallWithError(FfiConverterTypeMsgPackError.lift) {
-    uniffi_algo_models_ffi_fn_func_decode_asset_transfer(
+public func decodeTransaction(bytes: Data)throws  -> Transaction {
+    return try  FfiConverterTypeTransaction.lift(try rustCallWithError(FfiConverterTypeMsgPackError.lift) {
+    uniffi_algo_models_ffi_fn_func_decode_transaction(
         FfiConverterData.lower(bytes),$0
     )
 })
 }
-public func decodePayment(bytes: Data)throws  -> PayTransactionFields {
-    return try  FfiConverterTypePayTransactionFields.lift(try rustCallWithError(FfiConverterTypeMsgPackError.lift) {
-    uniffi_algo_models_ffi_fn_func_decode_payment(
-        FfiConverterData.lower(bytes),$0
-    )
-})
-}
-public func encodeAssetTransfer(tx: AssetTransferTransactionFields)throws  -> Data {
+public func encodeTransaction(tx: Transaction)throws  -> Data {
     return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeMsgPackError.lift) {
-    uniffi_algo_models_ffi_fn_func_encode_asset_transfer(
-        FfiConverterTypeAssetTransferTransactionFields.lower(tx),$0
-    )
-})
-}
-public func encodePayment(tx: PayTransactionFields)throws  -> Data {
-    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeMsgPackError.lift) {
-    uniffi_algo_models_ffi_fn_func_encode_payment(
-        FfiConverterTypePayTransactionFields.lower(tx),$0
+    uniffi_algo_models_ffi_fn_func_encode_transaction(
+        FfiConverterTypeTransaction.lower(tx),$0
     )
 })
 }
@@ -1119,16 +1211,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_algo_models_ffi_checksum_func_attach_signature() != 24223) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_algo_models_ffi_checksum_func_decode_asset_transfer() != 49838) {
+    if (uniffi_algo_models_ffi_checksum_func_decode_transaction() != 21646) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_algo_models_ffi_checksum_func_decode_payment() != 34597) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_algo_models_ffi_checksum_func_encode_asset_transfer() != 53437) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_algo_models_ffi_checksum_func_encode_payment() != 33584) {
+    if (uniffi_algo_models_ffi_checksum_func_encode_transaction() != 56381) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_algo_models_ffi_checksum_func_get_encoded_transaction_type() != 48003) {
