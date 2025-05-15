@@ -17,6 +17,8 @@ on:
         required: true
       BOT_SK:
         required: true
+      GITHUB_TOKEN:
+        required: true
 
 permissions:
   contents: write # to make commits
@@ -62,5 +64,5 @@ jobs:
         working-directory: ${{ env.PACKAGE_DIR }}
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
-          NPM_TOKEN: ${{ steps.app_token.outputs.token }}
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun semantic-release
