@@ -1,7 +1,7 @@
 {
   "name": "@neilcampbell/algokit-algod-api",
   "version": "0.0.1",
-  "description": "OpenAPI client for @algorandfoundation/algokit-algod-api",
+  "description": "OpenAPI client for @neilcampbell/algokit-algod-api",
   "author": "OpenAPI-Generator Contributors",
   "repository": {
     "type": "git",

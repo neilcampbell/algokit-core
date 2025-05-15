@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { algorandFixture } from "@algorandfoundation/algokit-utils/testing";
 import * as algosdk from "algosdk";
-import * as algodPackage from "@algorandfoundation/algokit-algod-api";
+import * as algodPackage from "@neilcampbell/algokit-algod-api";
 import { encodeTransaction, Transaction, Address } from "algokit_transact";
 import { Blob } from "buffer";
 import { HttpFile } from "../http/http";
