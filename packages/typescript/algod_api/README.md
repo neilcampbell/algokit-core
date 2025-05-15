@@ -1,4 +1,4 @@
-## @algorandfoundation/algokit-algod-api@0.0.1
+## @neilcampbell/algokit-algod-api@0.0.1
 
 This generator creates TypeScript/JavaScript client that utilizes fetch-api.
 
@@ -21,7 +21,7 @@ Navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```bash
-npm install @algorandfoundation/algokit-algod-api@0.0.1 --save
+npm install @neilcampbell/algokit-algod-api@0.0.1 --save
 ```
 
 _unPublished (not recommended):_
@@ -36,7 +36,7 @@ Below code snippet shows exemplary usage of the configuration and the API based
 on the typical `PetStore` example used for OpenAPI. 
 
 ```typescript
-import * as algodApi from '@algorandfoundation/algokit-algod-api'
+import * as algodApi from '@neilcampbell/algokit-algod-api'
 
 // Covers all auth methods included in your OpenAPI yaml definition
 const authConfig: algodApi.AuthMethodsConfiguration = {
