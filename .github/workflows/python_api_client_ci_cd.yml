@@ -44,10 +44,12 @@ jobs:
         with:
           app-id: ${{ secrets.BOT_ID }}
           private-key: ${{ secrets.BOT_SK }}
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           token: ${{ steps.app_token.outputs.token }}
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -81,8 +83,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
-          git config user.name "neilcampbell-auth[bot]"
-          git config user.email "211775805+neilcampbell-auth[bot]@users.noreply.github.com"
+          git config --global user.name "neilcampbell-auth[bot]"
+          git config --global user.email "211775805+neilcampbell-auth[bot]@users.noreply.github.com"
           git add .
           git commit -m "chore(python/${{ inputs.api }}): bump version to ${{ steps.semantic_release.outputs.version }}"
           git push
@@ -223,8 +225,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
-          git config user.name "neilcampbell-auth[bot]"
-          git config user.email "211775805+neilcampbell-auth[bot]@users.noreply.github.com"
+          git config --global user.name "neilcampbell-auth[bot]"
+          git config --global user.email "211775805+neilcampbell-auth[bot]@users.noreply.github.com"
           git revert --no-commit ${{ needs.get_version.outputs.version_commit_sha }}
           git commit -m "chore(python/${{ inputs.api }}): revert version commit made by CI due to failure" -m "failed run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           git push
