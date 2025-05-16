@@ -50,6 +50,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+          token: ${{ steps.app_token.outputs.token }}
         if: inputs.release
       - uses: oven-sh/setup-bun@v2
         if: inputs.release
