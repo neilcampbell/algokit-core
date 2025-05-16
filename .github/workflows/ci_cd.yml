@@ -67,6 +67,8 @@ jobs:
   #     BOT_SK: ${{ secrets.BOT_SK }}
   #     NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Test
+
   python_api_ci_cd:
     needs:
       - setup
